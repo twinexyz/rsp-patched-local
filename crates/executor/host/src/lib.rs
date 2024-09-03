@@ -8,7 +8,8 @@ use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, EthereumVariant, LineaVariant, OptimismVariant, Variant,
+    io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
+    OptimismVariant, Variant,
 };
 use rsp_primitives::account_proof::eip1186_proof_to_account_proof;
 use rsp_rpc_db::RpcDb;
@@ -38,6 +39,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,
             ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number).await,
             ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number).await,
+            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await, 
         }?;
 
         Ok(client_input)
@@ -86,8 +88,10 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             .with_recovered_senders()
             .ok_or(eyre!("failed to recover senders"))?;
         let executor_difficulty = current_block.header.difficulty;
+        println!("above executor print");
+        tracing::info!("above executor output",);
         let executor_output = V::execute(&executor_block_input, executor_difficulty, cache_db)?;
-
+        tracing::info!("below executor output",);
         // Validate the block post execution.
         tracing::info!("validating the block post execution");
         V::validate_block_post_execution(
@@ -133,6 +137,11 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         tracing::info!("verifying the state root");
         let state_root =
             rsp_mpt::compute_state_root(&executor_outcome, &dirty_storage_proofs, &rpc_db)?;
+
+        println!(
+            "crates/executor/host/src/lib.rs:: state root after compute: {:?} input_state_root: {:?}",
+            state_root, current_block.state_root
+        );
         if state_root != current_block.state_root {
             eyre::bail!("mismatched state root");
         }

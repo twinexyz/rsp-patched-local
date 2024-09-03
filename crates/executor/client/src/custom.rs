@@ -142,6 +142,13 @@ impl ConfigureEvm for CustomEvmConfig {
                     .append_handler_register(Self::set_precompiles)
                     .build()
             }
+            ChainVariant::Devnet => {
+                EvmBuilder::default()
+                    .with_db(db)
+                    // add additional precompiles
+                    .append_handler_register(Self::set_precompiles)
+                    .build()
+            }
         }
     }
 
@@ -158,6 +165,9 @@ impl ConfigureEvmEnv for CustomEvmConfig {
                 OptimismEvmConfig::default().fill_tx_env(tx_env, transaction, sender)
             }
             ChainVariant::Linea => EthEvmConfig::default().fill_tx_env(tx_env, transaction, sender),
+            ChainVariant::Devnet => {
+                EthEvmConfig::default().fill_tx_env(tx_env, transaction, sender)
+            }
         }
     }
 
@@ -181,6 +191,9 @@ impl ConfigureEvmEnv for CustomEvmConfig {
             ChainVariant::Linea => {
                 EthEvmConfig::default().fill_cfg_env(cfg_env, chain_spec, header, total_difficulty)
             }
+            ChainVariant::Devnet => {
+                EthEvmConfig::default().fill_cfg_env(cfg_env, chain_spec, header, total_difficulty)
+            }
         }
     }
 
@@ -197,6 +210,8 @@ impl ConfigureEvmEnv for CustomEvmConfig {
             ChainVariant::Optimism => OptimismEvmConfig::default()
                 .fill_tx_env_system_contract_call(env, caller, contract, data),
             ChainVariant::Linea => EthEvmConfig::default()
+                .fill_tx_env_system_contract_call(env, caller, contract, data),
+            ChainVariant::Devnet => EthEvmConfig::default()
                 .fill_tx_env_system_contract_call(env, caller, contract, data),
         }
     }
