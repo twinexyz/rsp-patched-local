@@ -1,5 +1,9 @@
 ## To prove local testnet geth blocks 
 
+## TLDR
+All the following commands below can be executed by running `run.sh` in the root directory. Read the following steps for manual proving.
+
+
 Run the geth server in dev mode, with http enabled. The default port is at http://127.0.0.1:8545
 ```sh
 geth --dev --http --http.api eth,web3,net --http.corsdomain "https://remix.ethereum.org/" 
@@ -43,7 +47,6 @@ Add the following to the alloc of the genesis as:
 }
 ```
 
-The final genesis should be in [this](./genesis.example.json) format. Now, move the genesis file to the repository.
 
 ```sh
 cp genesis.json $PROJECT_ROOT/crates/primitives/res/genesis/genesis.json
