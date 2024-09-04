@@ -43,7 +43,13 @@ Add the following to the alloc of the genesis as:
 }
 ```
 
-The final genesis should be in [this](./genesis.example.json) format.
+The final genesis should be in [this](./genesis.example.json) format. Now, move the genesis file to the repository.
+
+```sh
+cp genesis.json $PROJECT_ROOT/crates/primitives/res/genesis/genesis.json
+```
+
+> Note: If you restart geth --dev server, new faucet account will be created. So, you'll need to update the genesis file again.
 
 Now, we need to generate blocks to prove using rsp. To create the blocks, enter the geth console again.
 ```sh
