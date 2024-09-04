@@ -3,6 +3,8 @@
 ## TLDR
 All the following commands below can be executed by running `run.sh` in the root directory. Read the following steps for manual proving.
 
+---
+# Steps
 
 Run the geth server in dev mode, with http enabled. The default port is at http://127.0.0.1:8545
 ```sh
