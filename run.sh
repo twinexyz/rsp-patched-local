@@ -66,8 +66,6 @@ fi
 mv genesis_updated.json crates/primitives/res/genesis/genesis.json
 rm -r genesis.json
 
-# Stop geth
-kill $geth_pid
 
 echo "Added the account and history storage to genesis.json successfully."
 
@@ -92,3 +90,6 @@ fi
 
 echo "Proving block " $value
 cargo run --bin rsp --release -- --block-number $value --rpc-url http://localhost:8545/ --chain-id 1337 --prove
+
+# Stop geth
+kill $geth_pid
