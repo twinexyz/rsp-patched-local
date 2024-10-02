@@ -299,7 +299,7 @@ impl Variant for LineaVariant {
 
 impl Variant for DevnetVarient {
     fn spec() -> ChainSpec {
-        rsp_primitives::chain_spec::devnet().unwrap()
+        rsp_primitives::chain_spec::devnet()
     }
 
     fn execute<DB>(

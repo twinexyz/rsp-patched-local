@@ -53,16 +53,37 @@ pub fn mainnet() -> ChainSpec {
     spec
 }
 
-pub fn devnet() -> eyre::Result<ChainSpec> {
+pub fn devnet() -> ChainSpec {
     println!("crates/primitives/src/chain_spec.rs:: this should have called the genesis block.");
     let genesis = include_str!("../res/genesis/genesis.json");
     let genesis: reth_primitives::Genesis = serde_json::from_str(genesis).unwrap();
     println!("crates/primitives/src/chain_spec.rs:: no issues in loading the genesis block.");
-    Ok(ChainSpecBuilder::default()
-        .chain(Chain::dev())
-        .genesis(genesis)
-        .cancun_activated()
-        .build())
+    ChainSpec {
+        chain: Chain::dev(), 
+        genesis,
+        paris_block_and_final_difficulty: Some((0, U256::ZERO)), 
+        hardforks: ChainHardforks::new(vec![
+            (EthereumHardfork::Frontier.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Homestead.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Dao.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Tangerine.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::SpuriousDragon.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Byzantium.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Constantinople.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Petersburg.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Istanbul.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::MuirGlacier.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Berlin.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::London.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::ArrowGlacier.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::GrayGlacier.boxed(), ForkCondition::Block(0)),
+            (
+                EthereumHardfork::Paris.boxed(),
+                ForkCondition::TTD { fork_block: Some(0), total_difficulty: U256::ZERO },
+            ),
+        ]),
+        ..Default::default()
+    }
 }
 
 /// Returns the [ChainSpec] for OP Mainnet.
@@ -74,9 +95,6 @@ pub fn op_mainnet() -> ChainSpec {
         chain: Chain::optimism_mainnet(),
         // We don't need the genesis state. Using default to save cycles.
         genesis: Default::default(),
-        genesis_hash: Some(b256!(
-            "7ca38a1916c42007829c55e69d3e9a73265554b586a499015373241b8a3fa48b"
-        )),
         paris_block_and_final_difficulty: Some((0, U256::ZERO)),
         hardforks: OptimismHardfork::op_mainnet(),
         base_fee_params: BaseFeeParamsKind::Variable(
