@@ -2580,15 +2580,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rsp-client-eth"
-version = "0.0.0"
-dependencies = [
- "bincode",
- "rsp-client-executor",
- "sp1-zkvm",
-]
-
-[[package]]
 name = "rsp-client-executor"
 version = "0.1.0"
 dependencies = [
@@ -2618,6 +2609,15 @@ dependencies = [
  "serde_json",
  "tokio",
  "url",
+]
+
+[[package]]
+name = "rsp-client-local"
+version = "0.0.0"
+dependencies = [
+ "bincode",
+ "rsp-client-executor",
+ "sp1-zkvm",
 ]
 
 [[package]]

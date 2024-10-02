@@ -13,4 +13,9 @@ fn main() {
         &format!("../{}", "client-linea"),
         BuildArgs { ignore_rust_version: true, ..Default::default() },
     );
+     build_program_with_args(
+        &format!("../{}", "client-local"),
+        BuildArgs { ignore_rust_version: true, ..Default::default() },
+    );
+
 }
