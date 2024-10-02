@@ -38,6 +38,7 @@ url = "2.3"
 thiserror = "1.0.61"
 hex-literal = "0.4.1"
 rayon = "1.10.0"
+rlp = "0.5.2"
 
 # workspace
 rsp-rpc-db = { path = "./crates/storage/rpc-db" }
@@ -94,6 +95,8 @@ revm-primitives = { version = "9.0.0", features = [
     "serde",
 ], default-features = false }
 revm-inspectors = "0.6"
+revm-interpreter = { version = "=10.0.1", default-features = false }
+revm-precompile = { version = "=11.0.1", default-features = false }
 
 # alloy
 alloy-primitives = "0.8.0"

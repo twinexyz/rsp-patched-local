@@ -1,8 +1,7 @@
-#![feature(stmt_expr_attributes)]
-
+/// Client program input data types.
 pub mod io;
 #[macro_use]
-pub mod utils;
+mod utils;
 
 pub mod custom;
 
@@ -21,7 +20,7 @@ use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
 use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Header, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
-use revm_primitives::{Address, U256};
+use revm_primitives::{address, U256};
 
 /// Chain ID for Ethereum Mainnet.
 pub const CHAIN_ID_ETH_MAINNET: u64 = 0x1;
@@ -156,8 +155,10 @@ impl ClientExecutor {
 
         // Verify the state root.
         let state_root = profile!("compute state root", {
-            rsp_mpt::compute_state_root(&executor_outcome, &input.dirty_storage_proofs, &witness_db)
-        })?;
+            input.parent_state.update(&executor_outcome.hash_state_slow());
+            input.parent_state.state_root()
+        });
+
         if state_root != input.current_block.state_root {
             eyre::bail!("mismatched state root");
         }
@@ -166,7 +167,7 @@ impl ClientExecutor {
         //
         // Note: the receipts root and gas used are verified by `validate_block_post_execution`.
         let mut header = input.current_block.header.clone();
-        header.parent_hash = input.previous_block.hash_slow();
+        header.parent_hash = input.parent_header().hash_slow();
         header.ommers_hash = proofs::calculate_ommers_root(&input.current_block.ommers);
         header.state_root = input.current_block.state_root;
         header.transactions_root = proofs::calculate_transaction_root(&input.current_block.body);
@@ -186,7 +187,7 @@ impl ClientExecutor {
 
 impl Variant for EthereumVariant {
     fn spec() -> ChainSpec {
-        rsp_primitives::chain_spec::mainnet().unwrap()
+        rsp_primitives::chain_spec::mainnet()
     }
 
     fn execute<DB>(
@@ -217,7 +218,7 @@ impl Variant for EthereumVariant {
 
 impl Variant for OptimismVariant {
     fn spec() -> ChainSpec {
-        rsp_primitives::chain_spec::op_mainnet().unwrap()
+        rsp_primitives::chain_spec::op_mainnet()
     }
 
     fn execute<DB>(
@@ -248,7 +249,7 @@ impl Variant for OptimismVariant {
 
 impl Variant for LineaVariant {
     fn spec() -> ChainSpec {
-        rsp_primitives::chain_spec::linea_mainnet().unwrap()
+        rsp_primitives::chain_spec::linea_mainnet()
     }
 
     fn execute<DB>(
@@ -287,7 +288,7 @@ impl Variant for LineaVariant {
         // - address: 20 bytes
         // - seal: 65 bytes
         // we extract the address from the 32nd to 52nd byte.
-        let addr = Address::from_slice(&Self::spec().genesis().extra_data[32..52]);
+        let addr = address!("8f81e2e3f8b46467523463835f965ffe476e1c9e");
 
         // We hijack the beneficiary address here to match the clique consensus.
         let mut block = block.clone();

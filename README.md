@@ -26,18 +26,9 @@ In order to prove a block from the local ethereum testnet, refer [here](./docs/l
 
 ### RPC Node Requirement
 
-RSP fetches block and state data from a JSON-RPC node. It's recommended that you use a RPC node that supports the `debug_dbGet` endpoint.
+RSP fetches block and state data from a JSON-RPC node. You must use an archive node which preserves historical intermediate trie nodes needed for fetching storage proofs.
 
-This is recommended because in some cases the host needs to recover the preimage of a [Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) node that's referenced by hash. To do this, the host utilizes the [`debug_dbGet` endpoint](https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-debug#debugdbget) of a Geth node running with options `--state.scheme=hash`, which is the default, and `--gcmode=archive`. An example command for running the node is:
-
-```bash
-geth \
-  --gcmode=archive \
-  --http \
-  --http.api=eth,debug
-```
-
-However, in the absence of the `debug_dbGet` method, the host is able to fall back to a less efficient process of recovering the preimages via the standard `eth_getProof`. The fallback works in most cases but not all, so if you encounter a preimage recovery failure, you can reach out to the Succinct team to access an RPC URL that supports `debug_dbGet`.
+In Geth, the archive mode can be enabled with the `--gcmode=archive` option. You can also use an RPC provider that offers archive data access.
 
 > [!TIP]
 >
@@ -93,6 +84,7 @@ End-to-end integration tests are available. To run these tests, utilize the `.en
 ```bash
 export RPC_1="YOUR_ETHEREUM_MAINNET_RPC_URL"
 export RPC_10="YOUR_OP_MAINNET_RPC_URL"
+export RPC_59144="YOUR_LINEA_MAINNET_RPC_URL"
 ```
 
 Note that these JSON-RPC nodes must fulfill the [RPC node requirement](#rpc-node-requirement).
