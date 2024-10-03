@@ -14,7 +14,7 @@ use std::{
 };
 use tracing_subscriber::{
     filter::EnvFilter,
-    fmt::{self, format},
+    fmt,
     prelude::__tracing_subscriber_SubscriberExt,
     util::SubscriberInitExt,
 };
