@@ -148,7 +148,7 @@ async fn main() -> eyre::Result<()> {
         // Actually generate the proof. It is strongly recommended you use the network prover
         // given the size of these programs.
         println!("Starting proof generation.");
-        let proof = client.prove(&pk, stdin).compressed().run().expect("Proving should work.");
+        let proof = client.prove(&pk, stdin).groth16().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
         let proof_dir = "proofs";
