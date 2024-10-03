@@ -7,9 +7,16 @@ use rsp_client_executor::{
 };
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{ProverClient, SP1Stdin};
-use std::{fs::File, io::Write, path::PathBuf};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+};
 use tracing_subscriber::{
-    filter::EnvFilter, fmt::{self, format}, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
+    filter::EnvFilter,
+    fmt::{self, format},
+    prelude::__tracing_subscriber_SubscriberExt,
+    util::SubscriberInitExt,
 };
 
 mod execute;
@@ -115,7 +122,9 @@ async fn main() -> eyre::Result<()> {
         }
         ChainVariant::Optimism => include_bytes!("../../client-op/elf/riscv32im-succinct-zkvm-elf"),
         ChainVariant::Linea => include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf"),
-        ChainVariant::Devnet => include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf"),
+        ChainVariant::Devnet => {
+            include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
+        }
     });
 
     // Execute the block inside the zkVM.
@@ -142,8 +151,15 @@ async fn main() -> eyre::Result<()> {
         let proof = client.prove(&pk, stdin).compressed().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
+        let proof_dir = "proofs";
+        if let Ok(exists) = fs::exists(proof_dir) {
+            if !exists {
+                fs::create_dir(proof_dir).unwrap();
+            }
+        }
+
         let proof_json = serde_json::to_string(&proof).unwrap();
-        let file_name = format!("execution_proof_{}.proof", args.block_number);
+        let file_name = format!("{}execution_proof_{}.proof", proof_dir, args.block_number);
         let mut proof_file = File::create(&file_name).unwrap();
         proof_file.write_all(proof_json.as_bytes()).unwrap();
 
