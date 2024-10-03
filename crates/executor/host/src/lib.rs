@@ -39,7 +39,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,
             ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number).await,
             ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number).await,
-            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await, 
+            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await,
         }?;
 
         Ok(client_input)

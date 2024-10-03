@@ -59,9 +59,9 @@ pub fn devnet() -> ChainSpec {
     let genesis: reth_primitives::Genesis = serde_json::from_str(genesis).unwrap();
     println!("crates/primitives/src/chain_spec.rs:: no issues in loading the genesis block.");
     ChainSpec {
-        chain: Chain::dev(), 
+        chain: Chain::dev(),
         genesis,
-        paris_block_and_final_difficulty: Some((0, U256::ZERO)), 
+        paris_block_and_final_difficulty: Some((0, U256::ZERO)),
         hardforks: ChainHardforks::new(vec![
             (EthereumHardfork::Frontier.boxed(), ForkCondition::Block(0)),
             (EthereumHardfork::Homestead.boxed(), ForkCondition::Block(0)),
