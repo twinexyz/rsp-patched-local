@@ -6,7 +6,7 @@ use rsp_client_executor::{
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
 };
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{ProverClient, SP1Stdin};
+use sp1_sdk::{HashableKey, ProverClient, SP1Stdin};
 use std::{
     fs::{self, File},
     io::Write,
@@ -148,7 +148,8 @@ async fn main() -> eyre::Result<()> {
         // Actually generate the proof. It is strongly recommended you use the network prover
         // given the size of these programs.
         println!("Starting proof generation.");
-        let proof = client.prove(&pk, stdin).compressed().run().expect("Proving should work.");
+        println!("vk:: {:?}", vk.hash_bn254());
+        let proof = client.prove(&pk, stdin).plonk().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
         let proof_dir = "proofs";
