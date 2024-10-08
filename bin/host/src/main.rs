@@ -148,7 +148,7 @@ async fn main() -> eyre::Result<()> {
         // Actually generate the proof. It is strongly recommended you use the network prover
         // given the size of these programs.
         println!("Starting proof generation.");
-        println!("vk:: {:?}", vk.hash_bn254());
+        println!("vk:: {:?}", vk.bytes32());
         let proof = client.prove(&pk, stdin).plonk().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
