@@ -181,7 +181,7 @@ impl ClientExecutor {
         header.logs_bloom = logs_bloom;
         header.requests_root =
             input.current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
-        
+
         
         block.header = header;
 

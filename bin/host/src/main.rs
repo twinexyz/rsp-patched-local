@@ -2,8 +2,9 @@ use alloy_provider::ReqwestProvider;
 use clap::Parser;
 use reth_primitives::{hex::ToHex, B256};
 use rsp_client_executor::{
-    io::{ClientExecutorInput, WitnessInput}, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
-    CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
+    io::{ClientExecutorInput, WitnessInput},
+    ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET,
+    CHAIN_ID_OP_MAINNET,
 };
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{HashableKey, ProverClient, SP1Stdin};
@@ -13,10 +14,7 @@ use std::{
     path::PathBuf,
 };
 use tracing_subscriber::{
-    filter::EnvFilter,
-    fmt,
-    prelude::__tracing_subscriber_SubscriberExt,
-    util::SubscriberInitExt,
+    filter::EnvFilter, fmt, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
 
 mod execute;
@@ -110,7 +108,7 @@ async fn main() -> eyre::Result<()> {
         (None, None) => {
             eyre::bail!("cache not found and RPC URL not provided")
         }
-    };    
+    };
 
     client_input.current_block.transactions_root.to_string();
 
@@ -135,12 +133,8 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (mut public_values, execution_report) =
+    let (_, execution_report) =
         client.execute(&pk.elf, stdin.clone()).run().unwrap();
-
-    // Read the block hash.
-    let block_hash = public_values.read::<B256>();
-    println!("success: block_hash={block_hash}");
 
     // Process the execute report, print it out, and save data to a CSV specified by
     // report_path.
