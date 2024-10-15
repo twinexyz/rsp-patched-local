@@ -105,7 +105,7 @@ impl ChainVariant {
 }
 
 impl ClientExecutor {
-    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<Header>
+    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<Block>
     where
         V: Variant,
     {
@@ -166,6 +166,7 @@ impl ClientExecutor {
         // Derive the block header.
         //
         // Note: the receipts root and gas used are verified by `validate_block_post_execution`.
+        let mut block = input.current_block.clone();
         let mut header = input.current_block.header.clone();
         header.parent_hash = input.parent_header().hash_slow();
         header.ommers_hash = proofs::calculate_ommers_root(&input.current_block.ommers);
@@ -180,8 +181,11 @@ impl ClientExecutor {
         header.logs_bloom = logs_bloom;
         header.requests_root =
             input.current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
+        
+        
+        block.header = header;
 
-        Ok(header)
+        Ok(block)
     }
 }
 

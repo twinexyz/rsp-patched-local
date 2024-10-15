@@ -1,8 +1,8 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use reth_primitives::B256;
+use reth_primitives::{hex::ToHex, B256};
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
+    io::{ClientExecutorInput, WitnessInput}, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
 };
 use rsp_host_executor::HostExecutor;
@@ -110,7 +110,9 @@ async fn main() -> eyre::Result<()> {
         (None, None) => {
             eyre::bail!("cache not found and RPC URL not provided")
         }
-    };
+    };    
+
+    client_input.current_block.transactions_root.to_string();
 
     // Generate the proof.
     let client = ProverClient::new();

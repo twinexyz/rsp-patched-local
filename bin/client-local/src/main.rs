@@ -12,7 +12,7 @@ pub fn main() {
     let executor = ClientExecutor;
     let header = executor.execute::<DevnetVarient>(input).expect("failed to execute client");
     let block_hash = header.hash_slow();
-
+    let transaction_root = header.transactions_root;
     // Commit the block hash.
-    sp1_zkvm::io::commit(&block_hash);
+    sp1_zkvm::io::commit(&transaction_root);
 }
