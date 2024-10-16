@@ -12,18 +12,13 @@ pub fn main() {
     let executor = ClientExecutor;
     let block = executor.execute::<DevnetVarient>(input).expect("failed to execute client");
     let mut hash_vector = Vec::<u8>::new();
-    
+
+    let mut state_root = block.state_root.as_slice(); 
+    hash_vector.append(&mut state_root);
+
     for txn in block.body {
         let mut txn_hash = Vec::from(txn.hash.as_slice());
         hash_vector.append(&mut txn_hash);
     }
-
-    loop {
-        if hash_vector.len() == 4800 {
-            break
-        }
-        hash_vector.push(0);
-    }
-
     sp1_zkvm::io::commit_slice(&hash_vector);
 }
