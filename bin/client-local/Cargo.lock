@@ -2616,6 +2616,7 @@ name = "rsp-client-local"
 version = "0.0.0"
 dependencies = [
  "bincode",
+ "revm-primitives",
  "rsp-client-executor",
  "sp1-zkvm",
 ]

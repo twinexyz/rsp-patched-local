@@ -2,6 +2,8 @@
 sp1_zkvm::entrypoint!(main);
 
 use rsp_client_executor::{io::ClientExecutorInput, ClientExecutor, DevnetVarient};
+use revm_primitives::FixedBytes;
+
 
 pub fn main() {
     // Read the input.
@@ -12,7 +14,10 @@ pub fn main() {
     let executor = ClientExecutor;
     let block = executor.execute::<DevnetVarient>(input).expect("failed to execute client");
     let mut hash_vector = Vec::<u8>::new();
-
+    let block_number = FixedBytes::from(block.number);
+    let mut block_number = block_number.as_slice();
+    hash_vector.append(&mut block_number);
+    
     let mut state_root = block.state_root.as_slice(); 
     hash_vector.append(&mut state_root);
 
