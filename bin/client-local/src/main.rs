@@ -15,10 +15,10 @@ pub fn main() {
     let block = executor.execute::<DevnetVarient>(input).expect("failed to execute client");
     let mut hash_vector = Vec::<u8>::new();
     let block_number = FixedBytes::from(block.number);
-    let mut block_number = block_number.as_slice();
+    let mut block_number = Vec::from(block_number.as_slice());
     hash_vector.append(&mut block_number);
     
-    let mut state_root = block.state_root.as_slice(); 
+    let mut state_root = Vec::from(block.state_root.as_slice()); 
     hash_vector.append(&mut state_root);
 
     for txn in block.body {
