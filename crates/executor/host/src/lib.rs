@@ -1,6 +1,6 @@
 use std::{collections::BTreeSet, marker::PhantomData};
 
-use alloy_provider::{network::AnyNetwork, Provider};
+use alloy_provider::{network::{AnyNetwork, ReceiptResponse}, Provider};
 use alloy_transport::Transport;
 use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
@@ -208,6 +208,17 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             ancestor_headers.push(block.inner.header.try_into()?);
         }
 
+        let mut status_list = Vec::new();
+        for txn in current_block.clone().body {
+            let receipts = self.provider.get_transaction_receipt(txn.hash).await.unwrap().unwrap();
+            let status = receipts.status();
+            let status = match status {
+                true => 1u8,
+                false => 0u8
+            };
+            status_list.push(status);
+        }
+
         // Create the client input.
         let client_input = ClientExecutorInput {
             current_block: V::pre_process_block(&current_block),
@@ -215,6 +226,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             parent_state: state,
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
+            status_list
         };
         tracing::info!("successfully generated client input");
 

@@ -7,6 +7,7 @@ pub mod custom;
 
 use std::{borrow::BorrowMut, fmt::Display};
 
+use alloy_rlp::{RlpDecodable, RlpEncodable};
 use custom::CustomEvmConfig;
 use eyre::eyre;
 use io::ClientExecutorInput;
@@ -21,6 +22,8 @@ use reth_optimism_consensus::validate_block_post_execution as validate_block_pos
 use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
 use revm_primitives::{address, U256};
+use serde::{Serialize, Deserialize};
+
 
 /// Chain ID for Ethereum Mainnet.
 pub const CHAIN_ID_ETH_MAINNET: u64 = 0x1;
@@ -104,8 +107,17 @@ impl ChainVariant {
     }
 }
 
+#[derive(
+    Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, RlpEncodable, RlpDecodable,
+)]
+#[rlp(trailing)]
+pub struct ExecutorOutput {
+    pub block: Block,
+    pub status_list: Vec<u8>
+}
+
 impl ClientExecutor {
-    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<Block>
+    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<ExecutorOutput>
     where
         V: Variant,
     {
@@ -185,7 +197,11 @@ impl ClientExecutor {
         
         block.header = header;
 
-        Ok(block)
+        
+        Ok(ExecutorOutput {
+            block,
+            status_list: input.status_list   
+        })
     }
 }
 

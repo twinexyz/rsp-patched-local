@@ -27,6 +27,8 @@ pub struct ClientExecutorInput {
     pub state_requests: HashMap<Address, Vec<U256>>,
     /// Account bytecodes.
     pub bytecodes: Vec<Bytecode>,
+    /// status of transactions in the block. Ordered according to the order or the transactions
+    pub status_list : Vec<u8>,
 }
 
 impl ClientExecutorInput {
