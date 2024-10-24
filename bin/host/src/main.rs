@@ -109,8 +109,6 @@ async fn main() -> eyre::Result<()> {
         }
     };
 
-    client_input.current_block.transactions_root.to_string();
-
     // Generate the proof.
     let client = ProverClient::new();
 
