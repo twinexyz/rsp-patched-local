@@ -1,0 +1,77 @@
+{
+    "config": {
+      "chainId": 1337,
+      "homesteadBlock": 0,
+      "eip150Block": 0,
+      "eip155Block": 0,
+      "eip158Block": 0,
+      "byzantiumBlock": 0,
+      "constantinopleBlock": 0,
+      "petersburgBlock": 0,
+      "istanbulBlock": 0,
+      "muirGlacierBlock": 0,
+      "berlinBlock": 0,
+      "londonBlock": 0,
+      "arrowGlacierBlock": 0,
+      "grayGlacierBlock": 0,
+      "shanghaiTime": 0,
+      "cancunTime": 0,
+      "terminalTotalDifficulty": 0,
+      "terminalTotalDifficultyPassed": true
+    },
+    "nonce": "0x0",
+    "timestamp": "0x0",
+    "extraData": "0x",
+    "gasLimit": "0xaf79e0",
+    "difficulty": "0x0",
+    "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "coinbase": "0x0000000000000000000000000000000000000000",
+    "alloc": {
+      "0000000000000000000000000000000000000001": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000002": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000003": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000004": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000005": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000006": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000007": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000008": {
+        "balance": "0x1"
+      },
+      "0000000000000000000000000000000000000009": {
+        "balance": "0x1"
+      },
+      "411d3d31924ef2f37d63643ae87ede1aa35e375f": {
+        "balance": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7"
+      },
+      "000f3df6d732807ef1319fb7b8bb8522d0beac02": {
+        "code": "0x3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500",
+        "balance": "0x0",
+        "nonce": "0x1"
+      },
+      "0aae40965e6800cd9b1f4b05ff21581047e3f91e": {
+        "code": "0x3373fffffffffffffffffffffffffffffffffffffffe1460575767ffffffffffffffff5f3511605357600143035f3511604b575f35612000014311604b57611fff5f3516545f5260205ff35b5f5f5260205ff35b5f5ffd5b5f35611fff60014303165500",
+        "balance": "0x0",
+        "nonce": "0x1"
+      }
+    },
+    "number": "0x0",
+    "gasUsed": "0x0",
+    "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "baseFeePerGas": "0x3b9aca00",
+    "excessBlobGas": null,
+    "blobGasUsed": null
+  }

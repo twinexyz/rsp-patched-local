@@ -20,6 +20,10 @@ cargo install --locked --path bin/host
 
 and the command `rsp` will be installed.
 
+### Private Block Proving
+
+In order to prove a block from the local ethereum testnet, refer [here](./docs/local_testnet.md)
+
 ### RPC Node Requirement
 
 RSP fetches block and state data from a JSON-RPC node. You must use an archive node which preserves historical intermediate trie nodes needed for fetching storage proofs.

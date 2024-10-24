@@ -10,8 +10,8 @@ pub fn main() {
 
     // Execute the block.
     let executor = ClientExecutor;
-    let header = executor.execute::<LineaVariant>(input).expect("failed to execute client");
-    let block_hash = header.hash_slow();
+    let executor_output = executor.execute::<LineaVariant>(input).expect("failed to execute client");
+    let block_hash = executor_output.block.hash_slow();
 
     // Commit the block hash.
     sp1_zkvm::io::commit(&block_hash);

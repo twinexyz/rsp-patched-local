@@ -7,6 +7,7 @@ pub mod custom;
 
 use std::{borrow::BorrowMut, fmt::Display};
 
+use alloy_rlp::{RlpDecodable, RlpEncodable};
 use custom::CustomEvmConfig;
 use eyre::eyre;
 use io::ClientExecutorInput;
@@ -18,9 +19,11 @@ use reth_evm_ethereum::execute::EthExecutorProvider;
 use reth_evm_optimism::OpExecutorProvider;
 use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
-use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Header, Receipt, Receipts, Request};
+use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
 use revm_primitives::{address, U256};
+use serde::{Serialize, Deserialize};
+
 
 /// Chain ID for Ethereum Mainnet.
 pub const CHAIN_ID_ETH_MAINNET: u64 = 0x1;
@@ -30,6 +33,9 @@ pub const CHAIN_ID_OP_MAINNET: u64 = 0xa;
 
 /// Chain ID for Linea Mainnet.
 pub const CHAIN_ID_LINEA_MAINNET: u64 = 0xe708;
+
+/// Chain ID for Devnet
+pub const CHAIN_ID_DEVNET: u64 = 0x539;
 
 /// An executor that executes a block inside a zkVM.
 #[derive(Debug, Clone, Default)]
@@ -72,6 +78,10 @@ pub struct OptimismVariant;
 #[derive(Debug)]
 pub struct LineaVariant;
 
+/// Implementation for Linea-specific execution/validation logic.
+#[derive(Debug)]
+pub struct DevnetVarient;
+
 /// EVM chain variants that implement different execution/validation rules.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ChainVariant {
@@ -81,6 +91,8 @@ pub enum ChainVariant {
     Optimism,
     /// Linea networks.
     Linea,
+    /// Devnet network
+    Devnet,
 }
 
 impl ChainVariant {
@@ -90,12 +102,22 @@ impl ChainVariant {
             ChainVariant::Ethereum => CHAIN_ID_ETH_MAINNET,
             ChainVariant::Optimism => CHAIN_ID_OP_MAINNET,
             ChainVariant::Linea => CHAIN_ID_LINEA_MAINNET,
+            ChainVariant::Devnet => CHAIN_ID_DEVNET,
         }
     }
 }
 
+#[derive(
+    Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, RlpEncodable, RlpDecodable,
+)]
+#[rlp(trailing)]
+pub struct ExecutorOutput {
+    pub block: Block,
+    pub status_list: Vec<u8>
+}
+
 impl ClientExecutor {
-    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<Header>
+    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<ExecutorOutput>
     where
         V: Variant,
     {
@@ -156,6 +178,7 @@ impl ClientExecutor {
         // Derive the block header.
         //
         // Note: the receipts root and gas used are verified by `validate_block_post_execution`.
+        let mut block = input.current_block.clone();
         let mut header = input.current_block.header.clone();
         header.parent_hash = input.parent_header().hash_slow();
         header.ommers_hash = proofs::calculate_ommers_root(&input.current_block.ommers);
@@ -171,7 +194,14 @@ impl ClientExecutor {
         header.requests_root =
             input.current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
 
-        Ok(header)
+        
+        block.header = header;
+
+        
+        Ok(ExecutorOutput {
+            block,
+            status_list: input.status_list   
+        })
     }
 }
 
@@ -284,5 +314,38 @@ impl Variant for LineaVariant {
         let mut block = block.clone();
         block.header.borrow_mut().beneficiary = addr;
         block
+    }
+}
+
+impl Variant for DevnetVarient {
+    fn spec() -> ChainSpec {
+        rsp_primitives::chain_spec::devnet()
+    }
+
+    fn execute<DB>(
+        executor_block_input: &BlockWithSenders,
+        executor_difficulty: U256,
+        cache_db: DB,
+    ) -> eyre::Result<BlockExecutionOutput<Receipt>>
+    where
+        DB: Database<Error: Into<ProviderError> + Display>,
+    {
+        let returning = EthExecutorProvider::new(
+            Self::spec().into(),
+            CustomEvmConfig::from_variant(ChainVariant::Devnet),
+        )
+        .executor(cache_db)
+        .execute((executor_block_input, executor_difficulty).into())?;
+        println!("crates/executor/client/src/lib.rs:: did this execute??");
+        Ok(returning)
+    }
+
+    fn validate_block_post_execution(
+        block: &BlockWithSenders,
+        chain_spec: &ChainSpec,
+        receipts: &[Receipt],
+        requests: &[Request],
+    ) -> eyre::Result<()> {
+        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
     }
 }
