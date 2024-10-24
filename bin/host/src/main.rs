@@ -144,7 +144,7 @@ async fn main() -> eyre::Result<()> {
         // given the size of these programs.
         println!("Starting proof generation.");
         println!("vk:: {:?}", vk.bytes32());
-        let proof = client.prove(&pk, stdin).compressed().run().expect("Proving should work.");
+        let proof = client.prove(&pk, stdin).groth16().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
         let proof_dir = "proofs";

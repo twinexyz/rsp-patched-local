@@ -18,7 +18,7 @@ use reth_evm_ethereum::execute::EthExecutorProvider;
 use reth_evm_optimism::OpExecutorProvider;
 use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
-use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Header, Receipt, Receipts, Request};
+use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
 use revm_primitives::{address, U256};
 
