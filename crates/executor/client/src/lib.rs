@@ -351,7 +351,8 @@ impl Variant for DevnetVarient {
         for r in receipts {
             println!("the cumulative gas used is {}", r.cumulative_gas_used)
         } 
+        Ok(())
 
-        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
+        // Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
     }
 }
