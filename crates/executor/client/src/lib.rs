@@ -346,6 +346,12 @@ impl Variant for DevnetVarient {
         receipts: &[Receipt],
         requests: &[Request],
     ) -> eyre::Result<()> {
+        println!("cumulative gas used in the header {}", block.header.gas_used);
+        println!("cumulative gas used in the block {}", block.gas_used);
+        for r in receipts {
+            println!("the cumulative gas used is {}", r.cumulative_gas_used)
+        } 
+
         Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
     }
 }

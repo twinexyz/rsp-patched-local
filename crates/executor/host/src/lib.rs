@@ -50,7 +50,6 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         V: Variant,
     {
         // Fetch the current block and the previous block from the provider.
-        tracing::info!("fetching the current block and the previous block");
         let current_block = self
             .provider
             .get_block_by_number(block_number.into(), true)
@@ -65,11 +64,9 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
 
         // Setup the spec for the block executor.
-        tracing::info!("setting up the spec for the block executor");
         let spec = V::spec();
 
         // Setup the database for the block executor.
-        tracing::info!("setting up the database for the block executor");
         let rpc_db = RpcDb::new(self.provider.clone(), block_number - 1);
         let cache_db = CacheDB::new(&rpc_db);
 
@@ -79,15 +76,12 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             block_number,
             current_block.body.len()
         );
-
+        // TODO: block validation fails from here 
         let executor_block_input = V::pre_process_block(&current_block)
             .with_recovered_senders()
             .ok_or(eyre!("failed to recover senders"))?;
         let executor_difficulty = current_block.header.difficulty;
-        println!("above executor print");
-        tracing::info!("above executor output",);
         let executor_output = V::execute(&executor_block_input, executor_difficulty, cache_db)?;
-        tracing::info!("below executor output",);
         // Validate the block post execution.
         tracing::info!("validating the block post execution");
         V::validate_block_post_execution(
