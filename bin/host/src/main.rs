@@ -1,8 +1,7 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use reth_primitives::{hex::ToHex, B256};
 use rsp_client_executor::{
-    io::{ClientExecutorInput, WitnessInput},
+    io::ClientExecutorInput,
     ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET,
     CHAIN_ID_OP_MAINNET,
 };
