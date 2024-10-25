@@ -2055,7 +2055,7 @@ checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
 [[package]]
 name = "reth-blockchain-tree-api"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-consensus",
  "reth-execution-errors",
@@ -2067,7 +2067,7 @@ dependencies = [
 [[package]]
 name = "reth-chainspec"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-chains",
  "alloy-eips",
@@ -2089,7 +2089,7 @@ dependencies = [
 [[package]]
 name = "reth-codecs"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -2105,7 +2105,7 @@ dependencies = [
 [[package]]
 name = "reth-codecs-derive"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "convert_case",
  "proc-macro2",
@@ -2116,7 +2116,7 @@ dependencies = [
 [[package]]
 name = "reth-consensus"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "auto_impl",
  "derive_more 1.0.0",
@@ -2126,7 +2126,7 @@ dependencies = [
 [[package]]
 name = "reth-consensus-common"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-chainspec",
  "reth-consensus",
@@ -2136,7 +2136,7 @@ dependencies = [
 [[package]]
 name = "reth-db-models"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "bytes",
  "modular-bitfield",
@@ -2148,7 +2148,7 @@ dependencies = [
 [[package]]
 name = "reth-errors"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-blockchain-tree-api",
  "reth-consensus",
@@ -2161,7 +2161,7 @@ dependencies = [
 [[package]]
 name = "reth-ethereum-consensus"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-chainspec",
  "reth-consensus",
@@ -2173,7 +2173,7 @@ dependencies = [
 [[package]]
 name = "reth-ethereum-forks"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-chains",
  "alloy-primitives",
@@ -2190,7 +2190,7 @@ dependencies = [
 [[package]]
 name = "reth-evm"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-eips",
  "auto_impl",
@@ -2208,7 +2208,7 @@ dependencies = [
 [[package]]
 name = "reth-evm-ethereum"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-eips",
  "alloy-sol-types",
@@ -2226,7 +2226,7 @@ dependencies = [
 [[package]]
 name = "reth-evm-optimism"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-chainspec",
  "reth-ethereum-forks",
@@ -2246,7 +2246,7 @@ dependencies = [
 [[package]]
 name = "reth-execution-errors"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-eips",
  "alloy-primitives",
@@ -2262,7 +2262,7 @@ dependencies = [
 [[package]]
 name = "reth-execution-types"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-chainspec",
  "reth-execution-errors",
@@ -2274,7 +2274,7 @@ dependencies = [
 [[package]]
 name = "reth-fs-util"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "serde",
  "serde_json",
@@ -2284,7 +2284,7 @@ dependencies = [
 [[package]]
 name = "reth-network-peers"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",
@@ -2297,7 +2297,7 @@ dependencies = [
 [[package]]
 name = "reth-optimism-chainspec"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-chains",
  "alloy-primitives",
@@ -2312,7 +2312,7 @@ dependencies = [
 [[package]]
 name = "reth-optimism-consensus"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-chainspec",
  "reth-consensus",
@@ -2324,7 +2324,7 @@ dependencies = [
 [[package]]
 name = "reth-primitives"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -2353,7 +2353,7 @@ dependencies = [
 [[package]]
 name = "reth-primitives-traits"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-consensus",
  "alloy-eips",
@@ -2374,7 +2374,7 @@ dependencies = [
 [[package]]
 name = "reth-prune-types"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-primitives",
  "bytes",
@@ -2388,7 +2388,7 @@ dependencies = [
 [[package]]
 name = "reth-revm"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "reth-chainspec",
  "reth-consensus-common",
@@ -2403,7 +2403,7 @@ dependencies = [
 [[package]]
 name = "reth-stages-types"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-primitives",
  "bytes",
@@ -2416,7 +2416,7 @@ dependencies = [
 [[package]]
 name = "reth-static-file-types"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-primitives",
  "derive_more 1.0.0",
@@ -2427,7 +2427,7 @@ dependencies = [
 [[package]]
 name = "reth-storage-api"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "auto_impl",
  "reth-chainspec",
@@ -2443,7 +2443,7 @@ dependencies = [
 [[package]]
 name = "reth-storage-errors"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-rlp",
  "derive_more 1.0.0",
@@ -2454,7 +2454,7 @@ dependencies = [
 [[package]]
 name = "reth-trie"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-rlp",
  "auto_impl",
@@ -2473,7 +2473,7 @@ dependencies = [
 [[package]]
 name = "reth-trie-common"
 version = "1.0.6"
-source = "git+https://github.com/sp1-patches/reth?tag=rsp-20240830#260c7ed2c9374182a43a3602aaa953d37aa9217b"
+source = "git+https://github.com/twinexyz/reth.git?branch=patch/trie_root#15c25bd9e6308b0c569ed77222a8b9feafdda4e6"
 dependencies = [
  "alloy-consensus",
  "alloy-genesis",
