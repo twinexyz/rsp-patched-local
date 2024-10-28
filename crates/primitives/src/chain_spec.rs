@@ -81,6 +81,7 @@ pub fn devnet() -> ChainSpec {
                 EthereumHardfork::Paris.boxed(),
                 ForkCondition::TTD { fork_block: Some(0), total_difficulty: U256::ZERO },
             ),
+            (EthereumHardfork::Shanghai.boxed(), ForkCondition::Timestamp(0)),
         ]),
         ..Default::default()
     }
