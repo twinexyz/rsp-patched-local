@@ -3,6 +3,8 @@ pub mod io;
 #[macro_use]
 mod utils;
 
+pub mod erc20;
+
 pub mod custom;
 
 use std::{borrow::BorrowMut, fmt::Display};
@@ -22,8 +24,7 @@ use reth_optimism_consensus::validate_block_post_execution as validate_block_pos
 use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
 use revm_primitives::{address, U256};
-use serde::{Serialize, Deserialize};
-
+use serde::{Deserialize, Serialize};
 
 /// Chain ID for Ethereum Mainnet.
 pub const CHAIN_ID_ETH_MAINNET: u64 = 0x1;
@@ -113,9 +114,8 @@ impl ChainVariant {
 #[rlp(trailing)]
 pub struct ExecutorOutput {
     pub block: Block,
-    pub status_list: Vec<u8>
+    pub status_list: Vec<u8>,
 }
-
 
 impl ClientExecutor {
     pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<ExecutorOutput>
@@ -195,14 +195,9 @@ impl ClientExecutor {
         header.requests_root =
             input.current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
 
-        
         block.header = header;
 
-        
-        Ok(ExecutorOutput {
-            block,
-            status_list: input.status_list   
-        })
+        Ok(ExecutorOutput { block, status_list: input.status_list })
     }
 }
 
@@ -351,7 +346,7 @@ impl Variant for DevnetVarient {
         println!("cumulative gas used in the block {}", block.gas_used);
         for r in receipts {
             println!("the cumulative gas used is {}", r.cumulative_gas_used);
-        } 
+        }
 
         Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
     }

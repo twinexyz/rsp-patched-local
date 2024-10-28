@@ -169,7 +169,9 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         //
         // Note: the receipts root and gas used are verified by `validate_block_post_execution`.
         let mut header = current_block.header.clone();
-        header.parent_hash = previous_block.hash_slow();
+        // TODO: Check later
+        // header.parent_hash = previous_block.hash_slow();
+        header.parent_hash = current_block.header.parent_hash;
         header.ommers_hash = proofs::calculate_ommers_root(&current_block.ommers);
         header.state_root = current_block.state_root;
         header.transactions_root = proofs::calculate_transaction_root(&current_block.body);

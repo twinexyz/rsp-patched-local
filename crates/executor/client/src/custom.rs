@@ -5,7 +5,7 @@
 //! The [CustomEvmConfig] type implements the [ConfigureEvm] and [ConfigureEvmEnv] traits,
 //! configuring the custom CustomEvmConfig precompiles and instructions.
 
-use crate::ChainVariant;
+use crate::{erc20::erc20_precompiles, ChainVariant};
 use reth_chainspec::ChainSpec;
 use reth_evm::{ConfigureEvm, ConfigureEvmEnv};
 use reth_evm_ethereum::EthEvmConfig;
@@ -88,7 +88,7 @@ impl CustomEvmConfig {
     /// [ConfigureEvm::evm_with_inspector]
     ///
     /// This will use the default mainnet precompiles and add additional precompiles.
-    fn set_precompiles<EXT, DB>(handler: &mut EvmHandler<'_, EXT, DB>)
+    pub fn set_precompiles<EXT, DB>(handler: &mut EvmHandler<'_, EXT, DB>)
     where
         DB: Database,
     {
@@ -105,6 +105,10 @@ impl CustomEvmConfig {
                 ANNOTATED_BN_PAIR,
                 ANNOTATED_KZG_PROOF,
             ]);
+
+            // Note: Only for Twine node with erc20 precompile
+
+            loaded_precompiles.extend(erc20_precompiles());
 
             loaded_precompiles
         });
