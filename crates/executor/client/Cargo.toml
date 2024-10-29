@@ -41,6 +41,7 @@ revm-primitives.workspace = true
 
 # alloy
 alloy-primitives.workspace = true
+alloy-sol-types.workspace = true
 alloy-rlp.workspace = true
 itertools = "0.13.0"
 url.workspace = true

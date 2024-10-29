@@ -1,13 +1,17 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use reth_primitives::B256;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET,
+    io::ClientExecutorInput,
+    ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET,
     CHAIN_ID_OP_MAINNET,
 };
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{ProverClient, SP1Stdin};
-use std::path::PathBuf;
+use sp1_sdk::{HashableKey, ProverClient, SP1Stdin};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+};
 use tracing_subscriber::{
     filter::EnvFilter, fmt, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
@@ -58,6 +62,7 @@ async fn main() -> eyre::Result<()> {
         CHAIN_ID_ETH_MAINNET => ChainVariant::Ethereum,
         CHAIN_ID_OP_MAINNET => ChainVariant::Optimism,
         CHAIN_ID_LINEA_MAINNET => ChainVariant::Linea,
+        CHAIN_ID_DEVNET => ChainVariant::Devnet,
         _ => {
             eyre::bail!("unknown chain ID: {}", provider_config.chain_id);
         }
@@ -114,6 +119,9 @@ async fn main() -> eyre::Result<()> {
         }
         ChainVariant::Optimism => include_bytes!("../../client-op/elf/riscv32im-succinct-zkvm-elf"),
         ChainVariant::Linea => include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf"),
+        ChainVariant::Devnet => {
+            include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
+        }
     });
 
     // Execute the block inside the zkVM.
@@ -122,12 +130,8 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (mut public_values, execution_report) =
+    let (_, execution_report) =
         client.execute(&pk.elf, stdin.clone()).run().unwrap();
-
-    // Read the block hash.
-    let block_hash = public_values.read::<B256>();
-    println!("success: block_hash={block_hash}");
 
     // Process the execute report, print it out, and save data to a CSV specified by
     // report_path.
@@ -137,8 +141,21 @@ async fn main() -> eyre::Result<()> {
         // Actually generate the proof. It is strongly recommended you use the network prover
         // given the size of these programs.
         println!("Starting proof generation.");
-        let proof = client.prove(&pk, stdin).compressed().run().expect("Proving should work.");
+        println!("vk:: {:?}", vk.bytes32());
+        let proof = client.prove(&pk, stdin).groth16().run().expect("Proving should work.");
         println!("Proof generation finished.");
+
+        let proof_dir = "proofs";
+        if let Ok(exists) = fs::exists(proof_dir) {
+            if !exists {
+                fs::create_dir(proof_dir).unwrap();
+            }
+        }
+
+        let proof_json = serde_json::to_string(&proof).unwrap();
+        let file_name = format!("{}/execution_proof_{}.proof", proof_dir, args.block_number);
+        let mut proof_file = File::create(&file_name).unwrap();
+        proof_file.write_all(proof_json.as_bytes()).unwrap();
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
     }

@@ -1,13 +1,14 @@
 use std::{collections::BTreeSet, marker::PhantomData};
 
-use alloy_provider::{network::AnyNetwork, Provider};
+use alloy_provider::{network::{AnyNetwork, ReceiptResponse}, Provider};
 use alloy_transport::Transport;
 use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, EthereumVariant, LineaVariant, OptimismVariant, Variant,
+    io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
+    OptimismVariant, Variant,
 };
 use rsp_mpt::EthereumState;
 use rsp_primitives::account_proof::eip1186_proof_to_account_proof;
@@ -38,6 +39,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,
             ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number).await,
             ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number).await,
+            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await,
         }?;
 
         Ok(client_input)
@@ -48,7 +50,6 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         V: Variant,
     {
         // Fetch the current block and the previous block from the provider.
-        tracing::info!("fetching the current block and the previous block");
         let current_block = self
             .provider
             .get_block_by_number(block_number.into(), true)
@@ -63,11 +64,9 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
 
         // Setup the spec for the block executor.
-        tracing::info!("setting up the spec for the block executor");
         let spec = V::spec();
 
         // Setup the database for the block executor.
-        tracing::info!("setting up the database for the block executor");
         let rpc_db = RpcDb::new(self.provider.clone(), block_number - 1);
         let cache_db = CacheDB::new(&rpc_db);
 
@@ -77,13 +76,12 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             block_number,
             current_block.body.len()
         );
-
+        // TODO: block validation fails from here 
         let executor_block_input = V::pre_process_block(&current_block)
             .with_recovered_senders()
             .ok_or(eyre!("failed to recover senders"))?;
         let executor_difficulty = current_block.header.difficulty;
         let executor_output = V::execute(&executor_block_input, executor_difficulty, cache_db)?;
-
         // Validate the block post execution.
         tracing::info!("validating the block post execution");
         V::validate_block_post_execution(
@@ -171,7 +169,9 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         //
         // Note: the receipts root and gas used are verified by `validate_block_post_execution`.
         let mut header = current_block.header.clone();
-        header.parent_hash = previous_block.hash_slow();
+        // TODO: Check later
+        // header.parent_hash = previous_block.hash_slow();
+        header.parent_hash = current_block.header.parent_hash;
         header.ommers_hash = proofs::calculate_ommers_root(&current_block.ommers);
         header.state_root = current_block.state_root;
         header.transactions_root = proofs::calculate_transaction_root(&current_block.body);
@@ -204,6 +204,17 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             ancestor_headers.push(block.inner.header.try_into()?);
         }
 
+        let mut status_list = Vec::new();
+        for txn in current_block.clone().body {
+            let receipts = self.provider.get_transaction_receipt(txn.hash).await.unwrap().unwrap();
+            let status = receipts.status();
+            let status = match status {
+                true => 1u8,
+                false => 0u8
+            };
+            status_list.push(status);
+        }
+
         // Create the client input.
         let client_input = ClientExecutorInput {
             current_block: V::pre_process_block(&current_block),
@@ -211,6 +222,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             parent_state: state,
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
+            status_list
         };
         tracing::info!("successfully generated client input");
 

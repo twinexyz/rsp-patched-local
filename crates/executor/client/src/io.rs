@@ -27,6 +27,8 @@ pub struct ClientExecutorInput {
     pub state_requests: HashMap<Address, Vec<U256>>,
     /// Account bytecodes.
     pub bytecodes: Vec<Bytecode>,
+    /// status of transactions in the block. Ordered according to the order or the transactions
+    pub status_list: Vec<u8>,
 }
 
 impl ClientExecutorInput {
@@ -161,7 +163,7 @@ pub trait WitnessInput {
                 eyre::bail!("non-consecutive blocks");
             }
 
-            if parent_header.hash_slow() != child_header.parent_hash {
+            if parent_header.hash_slow() != child_header.parent_hash && parent_header.number != 0 {
                 eyre::bail!("parent hash mismatch");
             }
 

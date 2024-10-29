@@ -107,6 +107,7 @@ alloy-provider = { version = "0.3", default-features = false, features = [
 alloy-rpc-types = { version = "0.3", default-features = false, features = [
     "eth",
 ] }
+alloy-sol-types = "0.8.0"
 alloy-rlp = "0.3.4"
 alloy-consensus = { version = "0.3", default-features = false }
 alloy-transport = { version = "0.3" }
