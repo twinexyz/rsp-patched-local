@@ -38,7 +38,7 @@ pub fn main() {
     hash_vector.append(&mut deposit_transaction);
 
     let len = input.clone().withdrawal_txn_hashes.len().to_be_bytes();
-    let len: FixedBytes<8> = FixedBytes::from_slice(&len);
+    let len: FixedBytes<4> = FixedBytes::from_slice(&len);
     let mut len = Vec::from(len.as_slice());
     hash_vector.append(&mut len);
 
