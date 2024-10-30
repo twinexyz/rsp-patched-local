@@ -220,11 +220,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             } else {
                 None
             }
-        }).collect();
-
-        
-        
-
+        }).collect(); 
 
         // Create the client input.
         let client_input = ClientExecutorInput {

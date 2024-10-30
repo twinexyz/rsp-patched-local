@@ -28,7 +28,13 @@ pub fn main() {
     let mut receipt_root = Vec::from(block.receipts_root.as_slice());
     hash_vector.append(&mut receipt_root);
 
-    let mut deposit_transaction = Vec::from(block.body.first().unwrap().hash.as_slice());
+    let deposit_txn = current_block.body.first();
+    let deposit_txn_hash = match deposit_txn {
+        Some(txn) => txn.hash.as_slice(),
+        None => &[0u8;32]
+    };
+
+    let mut deposit_transaction = Vec::from(deposit_txn_hash);
     hash_vector.append(&mut deposit_transaction);
 
     let len = input.clone().withdrawal_txn_hashes.len().to_be_bytes();
