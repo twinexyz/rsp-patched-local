@@ -28,7 +28,7 @@ pub fn main() {
     let mut receipt_root = Vec::from(block.receipts_root.as_slice());
     hash_vector.append(&mut receipt_root);
 
-    let deposit_txn = current_block.body.first();
+    let deposit_txn = block.body.first();
     let deposit_txn_hash = match deposit_txn {
         Some(txn) => txn.hash.as_slice(),
         None => &[0u8;32]
