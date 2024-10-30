@@ -114,9 +114,6 @@ impl ChainVariant {
 #[rlp(trailing)]
 pub struct ExecutorOutput {
     pub block: Block,
-    pub deposit_txn_hash: B256,
-    pub withdrawl_txn_hashes: Vec<B256>,
-    pub l2_txn_hash: Vec<B256>
 }
 
 impl ClientExecutor {
@@ -199,11 +196,9 @@ impl ClientExecutor {
 
         block.header = header;
 
-        let deposit_transaction = block.body.first().unwrap().hash;
-
         // filter withdrawal transaction
 
-        Ok(ExecutorOutput { block, deposit_txn_hash: deposit_transaction , withdrawl_txn_hashes: vec![deposit_transaction], l2_txn_hash: vec![deposit_transaction]})
+        Ok(ExecutorOutput { block })
     }
 }
 
