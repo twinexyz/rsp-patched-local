@@ -7,7 +7,7 @@ pub mod erc20;
 
 pub mod custom;
 
-use std::{borrow::BorrowMut, fmt::Display};
+use std::{borrow::BorrowMut, fmt::Display, hash::Hash};
 
 use alloy_rlp::{RlpDecodable, RlpEncodable};
 use custom::CustomEvmConfig;
@@ -23,7 +23,7 @@ use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
 use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
-use revm_primitives::{address, U256};
+use revm_primitives::{address, B256, U256};
 use serde::{Deserialize, Serialize};
 
 /// Chain ID for Ethereum Mainnet.
@@ -114,7 +114,9 @@ impl ChainVariant {
 #[rlp(trailing)]
 pub struct ExecutorOutput {
     pub block: Block,
-    pub status_list: Vec<u8>,
+    pub deposit_txn_hash: B256,
+    pub withdrawl_txn_hashes: Vec<B256>,
+    pub l2_txn_hash: Vec<B256>
 }
 
 impl ClientExecutor {
@@ -197,7 +199,11 @@ impl ClientExecutor {
 
         block.header = header;
 
-        Ok(ExecutorOutput { block, status_list: input.status_list })
+        let deposit_transaction = block.body.first().unwrap().hash;
+
+        // filter withdrawal transaction
+
+        Ok(ExecutorOutput { block, deposit_txn_hash: deposit_transaction , withdrawl_txn_hashes: vec![deposit_transaction], l2_txn_hash: vec![deposit_transaction]})
     }
 }
 
