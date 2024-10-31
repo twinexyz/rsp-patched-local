@@ -109,6 +109,7 @@ impl CustomEvmConfig {
             // Note: Only for Twine node with erc20 precompile
 
             loaded_precompiles.extend(erc20_precompiles());
+            loaded_precompiles.extend(twine_precompiles::precompiles::verifier::precompiles());
 
             loaded_precompiles
         });
