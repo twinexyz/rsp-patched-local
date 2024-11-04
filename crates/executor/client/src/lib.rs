@@ -3,8 +3,8 @@ pub mod io;
 #[macro_use]
 mod utils;
 
-pub mod erc20;
-
+mod bridge_transactions;
+mod merkle_verifier;
 pub mod custom;
 
 use std::{borrow::BorrowMut, fmt::Display};

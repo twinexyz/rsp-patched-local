@@ -5,7 +5,7 @@
 //! The [CustomEvmConfig] type implements the [ConfigureEvm] and [ConfigureEvmEnv] traits,
 //! configuring the custom CustomEvmConfig precompiles and instructions.
 
-use crate::{erc20::erc20_precompiles, ChainVariant};
+use crate::{bridge_transactions::transactions::bridge_precompiles, ChainVariant};
 use reth_chainspec::ChainSpec;
 use reth_evm::{ConfigureEvm, ConfigureEvmEnv};
 use reth_evm_ethereum::EthEvmConfig;
@@ -108,7 +108,7 @@ impl CustomEvmConfig {
 
             // Note: Only for Twine node with erc20 precompile
 
-            loaded_precompiles.extend(erc20_precompiles());
+            loaded_precompiles.extend(bridge_precompiles());
 
             loaded_precompiles
         });
