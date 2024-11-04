@@ -45,10 +45,11 @@ impl<DB: Database> ContextStatefulPrecompile<DB> for ERC20Token {
         match TransferParamType::abi_decode(bytes.as_ref(), true) {
             Ok(res) => {
                 // load account first, make it warm
-                let balances_slot = get_balances_slot(res.1);
+                let user_address = reth_primitives::Address::from(*res.1 .0);
+                let balances_slot = get_balances_slot(user_address);
                 let total_supply_slot = get_total_supply_slot();
 
-                match evmctx.load_account(res.0) {
+                match evmctx.load_account(user_address) {
                     Ok(_) => {}
                     Err(_) => {
                         let err = PrecompileError::Other("AccountLoadError".to_string());
@@ -56,14 +57,14 @@ impl<DB: Database> ContextStatefulPrecompile<DB> for ERC20Token {
                     }
                 }
 
-                match evmctx.sload(res.0, balances_slot) {
+                match evmctx.sload(user_address, balances_slot) {
                     Ok(val) => {
                         let new_val = res.2.checked_add(val.data).expect("Error loading");
-                        evmctx.touch(&res.0);
-                        match evmctx.sstore(res.0, balances_slot, new_val) {
+                        evmctx.touch(&user_address);
+                        match evmctx.sstore(user_address, balances_slot, new_val) {
                             Ok(_) => {
                                 // Balances mapping has been updated. Update total supply now
-                                match evmctx.sload(res.0, total_supply_slot) {
+                                match evmctx.sload(user_address, total_supply_slot) {
                                     Ok(total_supply_val) => {
                                         let new_total_supply = total_supply_val
                                             .data
@@ -71,16 +72,14 @@ impl<DB: Database> ContextStatefulPrecompile<DB> for ERC20Token {
                                             .expect("Error loading total supply");
 
                                         match evmctx.sstore(
-                                            res.0,
+                                            user_address,
                                             total_supply_slot,
                                             new_total_supply,
                                         ) {
-                                            Ok(_) => {
-                                                Ok(PrecompileOutput {
-                                                    gas_used: 0u64,
-                                                    bytes: Bytes::new(),
-                                                })
-                                            }
+                                            Ok(_) => Ok(PrecompileOutput {
+                                                gas_used: 0u64,
+                                                bytes: Bytes::new(),
+                                            }),
                                             Err(_) => {
                                                 let err = PrecompileError::Other(
                                                     "DBWriteError".to_string(),
@@ -90,9 +89,8 @@ impl<DB: Database> ContextStatefulPrecompile<DB> for ERC20Token {
                                         }
                                     }
                                     Err(_) => {
-                                        let err = PrecompileError::Other(
-                                            "AccountLoadError".to_string(),
-                                        );
+                                        let err =
+                                            PrecompileError::Other("AccountLoadError".to_string());
                                         Err(PrecompileErrors::Error(err))
                                     }
                                 }

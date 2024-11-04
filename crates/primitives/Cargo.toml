@@ -27,3 +27,5 @@ revm-primitives.workspace = true
 
 # alloy
 alloy-rpc-types.workspace = true
+
+ring.workspace = true
