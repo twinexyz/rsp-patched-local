@@ -685,6 +685,20 @@ name = "bytemuck"
 version = "1.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b236fc92302c97ed75b38da1f4917b5cdda4984745740f153a5d3059e48d725e"
+dependencies = [
+ "bytemuck_derive",
+]
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bcfcc3cd946cb52f0bbfdbbcfa2f4e24f75ebb6c0e1002f7c25904fada18b9ec"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.72",
+]
 
 [[package]]
 name = "byteorder"
@@ -2530,7 +2544,7 @@ dependencies = [
  "ripemd",
  "secp256k1",
  "sha2",
- "substrate-bn",
+ "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?branch=patch-v0.6.0)",
 ]
 
 [[package]]
@@ -2621,6 +2635,7 @@ dependencies = [
  "rsp-witness-db",
  "serde",
  "serde_json",
+ "sp1-verifier",
  "tokio",
  "url",
 ]
@@ -3021,28 +3036,47 @@ dependencies = [
 [[package]]
 name = "sp1-lib"
 version = "3.0.0"
-source = "git+https://github.com/succinctlabs/sp1?branch=dev#da2bfcd22e2a719a3d0aede8072339a09a7fbb7d"
+source = "git+https://github.com/succinctlabs/sp1?branch=dev#4370aad12dce2dbe78a0461aae4e84b9c6d9139a"
 dependencies = [
  "bincode",
  "serde",
 ]
 
 [[package]]
-name = "sp1-zkvm"
-version = "1.2.0"
+name = "sp1-lib"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a777787c41fffb1ce1e74229f480223ce8d0ae66763aaac689cec737a19663e"
+checksum = "14deb700469a37ec075bcf88dac3815b026dd9c4b9cb175980826f1fbb2e4e80"
 dependencies = [
  "bincode",
+ "serde",
+]
+
+[[package]]
+name = "sp1-verifier"
+version = "3.0.0"
+source = "git+https://github.com/succinctlabs/sp1.git?rev=b8abe3298b92eec38d6f1b7f7e51a1329b272148#b8abe3298b92eec38d6f1b7f7e51a1329b272148"
+dependencies = [
+ "hex",
+ "lazy_static",
+ "sha2",
+ "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?tag=substrate_bn-v0.6.0-patch-v2)",
+ "thiserror-no-std",
+]
+
+[[package]]
+name = "sp1-zkvm"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a5691948f95f2acbea5c7ccef08d70105a08b5fbbabe8dd5ed94b120bc2c9c3"
+dependencies = [
  "cfg-if",
  "getrandom",
  "lazy_static",
  "libm",
- "once_cell",
  "rand",
- "serde",
  "sha2",
- "sp1-lib 1.2.0",
+ "sp1-lib 3.1.0",
 ]
 
 [[package]]
@@ -3108,6 +3142,22 @@ dependencies = [
  "quote",
  "rustversion",
  "syn 2.0.72",
+]
+
+[[package]]
+name = "substrate-bn"
+version = "0.6.0"
+source = "git+https://github.com/sp1-patches/bn?tag=substrate_bn-v0.6.0-patch-v2#201cc196da216656044e61fea7f68707b6896662"
+dependencies = [
+ "bytemuck",
+ "byteorder",
+ "cfg-if",
+ "crunchy",
+ "lazy_static",
+ "num-bigint 0.4.6",
+ "rand",
+ "rustc-hex",
+ "sp1-lib 3.1.0",
 ]
 
 [[package]]

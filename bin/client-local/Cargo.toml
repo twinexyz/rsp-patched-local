@@ -15,7 +15,7 @@ revm-primitives = { version = "9.0.0", features = [
 ], default-features = false }
 
 # sp1
-sp1-zkvm = "1.2.0-rc2"
+sp1-zkvm = "3.0.0"
 
 [patch.crates-io]
 # Precompile patches
