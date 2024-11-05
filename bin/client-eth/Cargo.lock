@@ -56,12 +56,10 @@ dependencies = [
  "alloy-core",
  "alloy-eips 0.2.1",
  "alloy-genesis 0.2.1",
- "alloy-network",
  "alloy-provider",
  "alloy-rpc-client",
  "alloy-rpc-types 0.2.1",
  "alloy-serde 0.2.1",
- "alloy-transport",
  "alloy-transport-http",
 ]
 
@@ -107,6 +105,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "alloy-consensus"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41ed961a48297c732a5d97ee321aa8bb5009ecadbcb077d8bec90cb54e651629"
+dependencies = [
+ "alloy-eips 0.5.4",
+ "alloy-primitives 0.8.10",
+ "alloy-rlp",
+ "auto_impl",
+ "c-kzg",
+ "derive_more 1.0.0",
+]
+
+[[package]]
 name = "alloy-core"
 version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -115,7 +127,6 @@ dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi 0.7.7",
  "alloy-primitives 0.7.7",
- "alloy-rlp",
  "alloy-sol-types 0.7.7",
 ]
 
@@ -160,6 +171,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "alloy-eip7702"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64ffc577390ce50234e02d841214b3dc0bea6aaaae8e04bbf3cb82e9a45da9eb"
+dependencies = [
+ "alloy-primitives 0.8.10",
+ "alloy-rlp",
+ "derive_more 1.0.0",
+]
+
+[[package]]
 name = "alloy-eips"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -171,7 +193,6 @@ dependencies = [
  "c-kzg",
  "ethereum_ssz 0.5.4",
  "ethereum_ssz_derive 0.5.4",
- "k256",
  "once_cell",
  "serde",
  "sha2 0.10.8",
@@ -184,10 +205,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f923dd5fca5f67a43d81ed3ebad0880bd41f6dd0ada930030353ac356c54cd0f"
 dependencies = [
  "alloy-eip2930",
- "alloy-eip7702",
+ "alloy-eip7702 0.1.1",
  "alloy-primitives 0.8.10",
  "alloy-rlp",
  "alloy-serde 0.3.6",
+ "c-kzg",
+ "derive_more 1.0.0",
+ "once_cell",
+ "serde",
+ "sha2 0.10.8",
+]
+
+[[package]]
+name = "alloy-eips"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b69e06cf9c37be824b9d26d6d101114fdde6af0c87de2828b414c05c4b3daa71"
+dependencies = [
+ "alloy-eip2930",
+ "alloy-eip7702 0.3.2",
+ "alloy-primitives 0.8.10",
+ "alloy-rlp",
  "c-kzg",
  "derive_more 1.0.0",
  "once_cell",
@@ -311,6 +349,27 @@ dependencies = [
  "const-hex",
  "derive_more 0.99.18",
  "ethereum_ssz 0.5.4",
+ "hex-literal",
+ "itoa",
+ "k256",
+ "keccak-asm",
+ "proptest",
+ "rand",
+ "ruint",
+ "serde",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "alloy-primitives"
+version = "0.8.0"
+source = "git+https://github.com/sp1-patches/alloy-core.git#6ab02a1fa53b0a5100a768906360a315d385541b"
+dependencies = [
+ "alloy-rlp",
+ "bytes",
+ "cfg-if",
+ "const-hex",
+ "derive_more 0.99.18",
  "hex-literal",
  "itoa",
  "k256",
@@ -3786,7 +3845,7 @@ dependencies = [
  "serde_json",
  "sp1-verifier",
  "tokio",
- "twine_tcp_lib",
+ "twine_precompiles",
  "url",
 ]
 
@@ -4802,6 +4861,22 @@ name = "try-lock"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
+
+[[package]]
+name = "twine_precompiles"
+version = "0.1.0"
+dependencies = [
+ "alloy-consensus 0.5.4",
+ "alloy-primitives 0.8.0",
+ "alloy-rlp",
+ "alloy-sol-types 0.7.7",
+ "ethereum_ssz 0.6.0",
+ "revm",
+ "serde",
+ "serde_json",
+ "sp1-verifier",
+ "twine_tcp_lib",
+]
 
 [[package]]
 name = "twine_tcp_lib"
