@@ -1,53 +1,56 @@
 [package]
 name = "rsp-client-executor"
 description = ""
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-homepage.workspace = true
-repository.workspace = true
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [lints]
 workspace = true
 
 [dependencies]
-eyre.workspace = true
-serde_json.workspace = true
-serde.workspace = true
-tokio.workspace = true
+eyre = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
 
 # workspace
-rsp-witness-db.workspace = true
-rsp-primitives.workspace = true
-rsp-mpt.workspace = true
+rsp-witness-db = { workspace = true }
+rsp-primitives = { workspace = true }
+rsp-mpt = { workspace = true }
 
 # reth
-reth-ethereum-consensus.workspace = true
-reth-optimism-consensus.workspace = true
-reth-execution-types.workspace = true
-reth-primitives.workspace = true
-reth-storage-errors.workspace = true
-reth-trie.workspace = true
-reth-evm.workspace = true
-reth-evm-ethereum.workspace = true
-reth-evm-optimism.workspace = true
-reth-errors.workspace = true
-reth-chainspec.workspace = true
-reth-revm.workspace = true
+reth-ethereum-consensus = { workspace = true }
+reth-optimism-consensus = { workspace = true }
+reth-execution-types = { workspace = true }
+reth-primitives = { workspace = true }
+reth-storage-errors = { workspace = true }
+reth-trie = { workspace = true }
+reth-evm = { workspace = true }
+reth-evm-ethereum = { workspace = true }
+reth-evm-optimism = { workspace = true }
+reth-errors = { workspace = true }
+reth-chainspec = { workspace = true }
+reth-revm = { workspace = true }
 
 # revm
-revm.workspace = true
-revm-primitives.workspace = true
+revm = { workspace = true }
+revm-primitives = { workspace = true }
 
 # alloy
-alloy-primitives.workspace = true
-alloy-sol-types.workspace = true
-alloy-rlp.workspace = true
+alloy-primitives = { workspace = true }
+alloy-sol-types = { workspace = true }
+alloy-rlp = { workspace = true }
 itertools = "0.13.0"
-url.workspace = true
-futures.workspace = true
+url = { workspace = true }
+futures = { workspace = true }
 
-sp1-verifier.workspace = true
-twine_tcp_lib.workspace = true
+sp1-verifier = { workspace = true }
+twine_tcp_lib = { workspace = true }
 
 [dev-dependencies]
+
+[patch.crates-io]
+ethereum_hashing = { git = "https://github.com/Atamanov/ethereum_hashing.git"}

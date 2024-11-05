@@ -117,18 +117,13 @@ alloy-transport-http = { version = "0.3", features = [
 alloy-eips = { version = "0.3", default-features = false }
 alloy-trie = "0.5.0"
 sp1-sdk = "3.0.0"
-sp1-helper = "3.0.0"
-twine_tcp_lib = {path = "../../../Sync/twine-consensus-prover/lib"}
-sp1-verifier = {git = "https://github.com/succinctlabs/sp1.git" , rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
-ring={version="0.17.8"}
+sp1-helper = "3.1.0"
+twine_tcp_lib = {path="../twine-consensus-prover/lib"}
+sp1-verifier = {git = "https://github.com/succinctlabs/sp1.git", rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
+
 
 [workspace.lints]
-rust.missing_debug_implementations = "warn"
-rust.unreachable_pub = "warn"
-rust.unused_must_use = "deny"
-rust.rust_2018_idioms = { level = "deny", priority = -1 }
-rustdoc.all = "warn"
+rust = { missing_debug_implementations = "warn", unreachable_pub = "warn", unused_must_use = "deny", rust_2018_idioms = { level = "deny", priority = -1, all = "warn" } }
 
 [patch.crates-io]
 ethereum_hashing = { git = "https://github.com/Atamanov/ethereum_hashing.git"}
-ring = { git = "https://github.com/Atamanov/ring/", version="0.17.8"}

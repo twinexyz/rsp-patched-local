@@ -56,10 +56,12 @@ dependencies = [
  "alloy-core",
  "alloy-eips 0.2.1",
  "alloy-genesis 0.2.1",
+ "alloy-network",
  "alloy-provider",
  "alloy-rpc-client",
  "alloy-rpc-types 0.2.1",
  "alloy-serde 0.2.1",
+ "alloy-transport",
  "alloy-transport-http",
 ]
 
@@ -113,6 +115,7 @@ dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi 0.7.7",
  "alloy-primitives 0.7.7",
+ "alloy-rlp",
  "alloy-sol-types 0.7.7",
 ]
 
@@ -168,6 +171,7 @@ dependencies = [
  "c-kzg",
  "ethereum_ssz 0.5.4",
  "ethereum_ssz_derive 0.5.4",
+ "k256",
  "once_cell",
  "serde",
  "sha2 0.10.8",
@@ -3699,7 +3703,8 @@ dependencies = [
 [[package]]
 name = "ring"
 version = "0.17.8"
-source = "git+https://github.com/Atamanov/ring/#47a8a8005ddc121b39be09b2a36c9a5e72d7bfb7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c17fa4cb658e3583423e915b9f3acc01cceaee1860e33d59ebae66adc3a2dc0d"
 dependencies = [
  "cc",
  "cfg-if",
@@ -3745,7 +3750,6 @@ version = "0.0.0"
 dependencies = [
  "bincode",
  "log",
- "ring",
  "rsp-client-executor",
  "sp1-zkvm",
  "tracing",
@@ -3821,7 +3825,6 @@ dependencies = [
  "revm-interpreter",
  "revm-precompile",
  "revm-primitives",
- "ring",
  "serde",
  "serde_json",
  "tracing",
@@ -4536,18 +4539,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.67"
+version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b3c6efbfc763e64eb85c11c25320f0737cb7364c4b6336db90aa9ebe27a0bbd"
+checksum = "02dd99dc800bbb97186339685293e1cc5d9df1f8fae2d0aecd9ff1c77efea892"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.67"
+version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b607164372e89797d78b8e23a6d67d5d1038c1c65efd52e1389ef8b77caba2a6"
+checksum = "a7c61ec9a6f64d2793d8a45faba21efbe3ced62a886d44c36a009b2b519b4c7e"
 dependencies = [
  "proc-macro2",
  "quote",
