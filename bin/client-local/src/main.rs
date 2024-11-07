@@ -19,7 +19,7 @@ pub fn main() {
     let mut block_number = Vec::from(block_number.as_slice());
     hash_vector.append(&mut block_number);
 
-    let mut block_hash = Vec::from(block.header.hash_slow().as_slice());
+    let mut block_hash = Vec::from(block.hash_slow().as_slice());
     hash_vector.append(&mut block_hash);
 
     let mut state_root = Vec::from(block.state_root.as_slice()); 
@@ -37,8 +37,15 @@ pub fn main() {
         None => &[0u8;32]
     };
 
-    let mut deposit_transaction = Vec::from(deposit_txn_hash);
-    hash_vector.append(&mut deposit_transaction);
+    let num_deposit_txn = input.clone().deposit_txn_hashes.len().to_be_bytes();
+    let num_deposit_txn: FixedBytes<4> = FixedBytes::from_slice(&num_deposit_txn);
+    let mut num_deposit_txn = Vec::from(num_deposit_txn.as_slice());
+    hash_vector.append(&mut num_deposit_txn);
+
+    for txn in input.clone().deposit_txn_hashes {
+        let mut deposit_transaction = Vec::from(txn.as_slice());
+        hash_vector.append(&mut deposit_transaction);
+    }
 
     let len = input.clone().withdrawal_txn_hashes.len().to_be_bytes();
     let len: FixedBytes<4> = FixedBytes::from_slice(&len);

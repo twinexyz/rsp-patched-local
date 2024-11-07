@@ -26,7 +26,7 @@ pub struct ClientExecutorInput {
     pub state_requests: HashMap<Address, Vec<U256>>,
     /// Account bytecodes.
     pub bytecodes: Vec<Bytecode>,
-    /// status of transactions in the block. Ordered according to the order or the transactions
+    pub deposit_txn_hashes: Vec<B256>,
     pub withdrawal_txn_hashes: Vec<B256>,
     pub normal_transactions: Vec<Option<B256>>,
 }

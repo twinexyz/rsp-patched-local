@@ -1,5 +1,6 @@
 use std::{collections::BTreeSet, marker::PhantomData};
 
+use alloy::hex::FromHex;
 use alloy_provider::{network::AnyNetwork, Provider};
 use alloy_rpc_types::Filter;
 use alloy_transport::Transport;
@@ -7,7 +8,7 @@ use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
-use revm_primitives::address;
+use revm_primitives::{address, FixedBytes};
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
     OptimismVariant, Variant,
@@ -209,12 +210,22 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let filter = filter
             .from_block(block_number)
             .to_block(block_number)
-            .address(address!("D059478a564dF1353A54AC0D0e7Fc55A90b92246"))
-            .topic1(header.parent_hash);
+            .events(["L1Deposit(),L1Forced()"])
+            .address(address!("D059478a564dF1353A54AC0D0e7Fc55A90b92246"));
+
+            
         let logs = self.provider.get_logs(&filter).await.unwrap();
         let mut withdrawal_transactions_hash = Vec::new();
+
+        let mut deposit_transaction_hash: Vec<B256> = vec![];
         for log in logs {
-            withdrawal_transactions_hash.push(log.transaction_hash.unwrap())
+            if let Some(x) = log.topic0() {
+                if x.clone() == FixedBytes::from_hex("0xd6b80d48d3fe11588fde323f1e848406dc544a67dd7b25a0803a67b8b657dc50").unwrap() {
+                    deposit_transaction_hash.push(log.transaction_hash.unwrap());
+                } else if x.clone() == FixedBytes::from_hex("0x57c51e0bf8f0638b8272d8ca0aef90217b3ee07a87e1dab78f14ae704193914c").unwrap() { 
+                    withdrawal_transactions_hash.push(log.transaction_hash.unwrap());  
+                }
+            }
         }
 
         let normal_transactions: Vec<Option<B256>> = current_block
@@ -237,7 +248,9 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             parent_state: state,
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
+            deposit_txn_hashes: deposit_transaction_hash,
             withdrawal_txn_hashes: withdrawal_transactions_hash,
+
             normal_transactions,
         };
         tracing::info!("successfully generated client input");

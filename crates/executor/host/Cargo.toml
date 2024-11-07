@@ -46,6 +46,8 @@ alloy-transport = { workspace = true }
 itertools = "0.13.0"
 futures = { workspace = true }
 alloy-rpc-types = { workspace = true }
+alloy = { workspace = true }
+alloy-sol-types ={ workspace = true }
 
 [dev-dependencies]
 alloy-primitives = { workspace = true }
