@@ -3,8 +3,6 @@ pub mod io;
 #[macro_use]
 mod utils;
 
-pub mod erc20;
-
 pub mod custom;
 
 use std::{borrow::BorrowMut, fmt::Display, hash::Hash};
