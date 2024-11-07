@@ -1,5 +1,4 @@
 use std::{collections::HashMap, iter::once};
-
 use eyre::Result;
 use itertools::Itertools;
 use reth_primitives::{revm_primitives::AccountInfo, Address, Block, Header, B256, U256};
@@ -28,7 +27,8 @@ pub struct ClientExecutorInput {
     /// Account bytecodes.
     pub bytecodes: Vec<Bytecode>,
     /// status of transactions in the block. Ordered according to the order or the transactions
-    pub status_list: Vec<u8>,
+    pub withdrawal_txn_hashes: Vec<B256>,
+    pub normal_transactions: Vec<Option<B256>>
 }
 
 impl ClientExecutorInput {

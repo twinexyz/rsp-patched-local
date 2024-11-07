@@ -12,7 +12,7 @@ pub fn main() {
 
     // Execute the block.
     let executor = ClientExecutor;
-    let executor_output = executor.execute::<DevnetVarient>(input).expect("failed to execute client");
+    let executor_output = executor.execute::<DevnetVarient>(input.clone()).expect("failed to execute client");
     let block = executor_output.block;
     let mut hash_vector = Vec::<u8>::new();
     let block_number = FixedBytes::from(block.number);
@@ -25,12 +25,39 @@ pub fn main() {
     let mut txn_root = Vec::from(block.transactions_root.as_slice());
     hash_vector.append(&mut txn_root);
 
-    for txn in block.body {
-        let mut txn_hash = Vec::from(txn.hash.as_slice());
+    let mut receipt_root = Vec::from(block.receipts_root.as_slice());
+    hash_vector.append(&mut receipt_root);
+
+    let deposit_txn = block.body.first();
+    let deposit_txn_hash = match deposit_txn {
+        Some(txn) => txn.hash.as_slice(),
+        None => &[0u8;32]
+    };
+
+    let mut deposit_transaction = Vec::from(deposit_txn_hash);
+    hash_vector.append(&mut deposit_transaction);
+
+    let len = input.clone().withdrawal_txn_hashes.len().to_be_bytes();
+    let len: FixedBytes<4> = FixedBytes::from_slice(&len);
+    let mut len = Vec::from(len.as_slice());
+    hash_vector.append(&mut len);
+
+    for txn in input.clone().withdrawal_txn_hashes {
+        let mut txn_hash = Vec::from(txn.as_slice());
         hash_vector.append(&mut txn_hash);
     }
 
-    let mut status_list = executor_output.status_list;
-    hash_vector.append(&mut status_list);
+    for txn in input.normal_transactions {
+        match txn {
+            Some(hash) => {
+                let mut hash = Vec::from(hash.as_slice());
+                hash_vector.append(&mut hash);
+            },
+            None => {
+                continue;
+            }
+        }
+    }
+
     sp1_zkvm::io::commit_slice(&hash_vector);
 }

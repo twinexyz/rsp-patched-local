@@ -7,7 +7,7 @@ pub mod erc20;
 
 pub mod custom;
 
-use std::{borrow::BorrowMut, fmt::Display};
+use std::{borrow::BorrowMut, fmt::Display, hash::Hash};
 
 use alloy_rlp::{RlpDecodable, RlpEncodable};
 use custom::CustomEvmConfig;
@@ -114,7 +114,6 @@ impl ChainVariant {
 #[rlp(trailing)]
 pub struct ExecutorOutput {
     pub block: Block,
-    pub status_list: Vec<u8>,
 }
 
 impl ClientExecutor {
@@ -197,7 +196,9 @@ impl ClientExecutor {
 
         block.header = header;
 
-        Ok(ExecutorOutput { block, status_list: input.status_list })
+        // filter withdrawal transaction
+
+        Ok(ExecutorOutput { block })
     }
 }
 
