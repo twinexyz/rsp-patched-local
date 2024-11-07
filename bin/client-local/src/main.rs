@@ -18,7 +18,10 @@ pub fn main() {
     let block_number = FixedBytes::from(block.number);
     let mut block_number = Vec::from(block_number.as_slice());
     hash_vector.append(&mut block_number);
-    
+
+    let mut block_hash = Vec::from(block.header.hash_slow().as_slice());
+    hash_vector.append(&mut block_hash);
+
     let mut state_root = Vec::from(block.state_root.as_slice()); 
     hash_vector.append(&mut state_root);
 
