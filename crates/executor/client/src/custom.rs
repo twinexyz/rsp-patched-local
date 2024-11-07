@@ -5,7 +5,7 @@
 //! The [CustomEvmConfig] type implements the [ConfigureEvm] and [ConfigureEvmEnv] traits,
 //! configuring the custom CustomEvmConfig precompiles and instructions.
 
-use crate::{erc20::erc20_precompiles, ChainVariant};
+use crate::ChainVariant;
 use reth_chainspec::ChainSpec;
 use reth_evm::{ConfigureEvm, ConfigureEvmEnv};
 use reth_evm_ethereum::EthEvmConfig;
@@ -22,6 +22,8 @@ use revm::precompile::{
     bn128, kzg_point_evaluation, secp256k1, Precompile, PrecompileResult, PrecompileWithAddress,
 };
 use std::sync::Arc;
+use twine_precompiles::precompiles::verifier::precompiles as verifier_precompile;
+use twine_precompiles::precompiles::bridge_transactions::transactions::precompiles as transaction_precompile;
 
 /// Create an annotated precompile that tracks the cycle count of a precompile.
 /// This is useful for tracking how many cycles in total are consumed by calls to a given
@@ -106,11 +108,9 @@ impl CustomEvmConfig {
                 ANNOTATED_KZG_PROOF,
             ]);
 
-            // Note: Only for Twine node with erc20 precompile
-
-            loaded_precompiles.extend(erc20_precompiles());
-            loaded_precompiles.extend(twine_precompiles::precompiles::verifier::precompiles());
-
+            // Twine Node precompiles.
+            loaded_precompiles.extend(verifier_precompile());
+            loaded_precompiles.extend(transaction_precompile());
             loaded_precompiles
         });
     }
