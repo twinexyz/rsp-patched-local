@@ -1,9 +1,8 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
 use rsp_client_executor::{
-    io::ClientExecutorInput,
-    ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET,
-    CHAIN_ID_OP_MAINNET,
+    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
+    CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
 };
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{HashableKey, ProverClient, SP1Stdin};
@@ -130,8 +129,7 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (_, execution_report) =
-        client.execute(&pk.elf, stdin.clone()).run().unwrap();
+    let (_, execution_report) = client.execute(&pk.elf, stdin.clone()).run().unwrap();
 
     // Process the execute report, print it out, and save data to a CSV specified by
     // report_path.

@@ -78,7 +78,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             block_number,
             current_block.body.len()
         );
-        // TODO: block validation fails from here 
+        // TODO: block validation fails from here
         let executor_block_input = V::pre_process_block(&current_block)
             .with_recovered_senders()
             .ok_or(eyre!("failed to recover senders"))?;
@@ -188,7 +188,6 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
 
         // Assert the derived header is correct.
         assert_eq!(header.hash_slow(), current_block.header.hash_slow(), "header mismatch");
-
         // Log the result.
         tracing::info!(
             "successfully executed block: block_number={}, block_hash={}, state_root={}",
@@ -207,20 +206,29 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         }
 
         let filter = Filter::new();
-        let filter = filter.from_block(block_number).to_block(block_number).address(address!("D059478a564dF1353A54AC0D0e7Fc55A90b92246")).topic1(header.parent_hash);
+        let filter = filter
+            .from_block(block_number)
+            .to_block(block_number)
+            .address(address!("D059478a564dF1353A54AC0D0e7Fc55A90b92246"))
+            .topic1(header.parent_hash);
         let logs = self.provider.get_logs(&filter).await.unwrap();
         let mut withdrawal_transactions_hash = Vec::new();
         for log in logs {
             withdrawal_transactions_hash.push(log.transaction_hash.unwrap())
         }
 
-        let normal_transactions: Vec<Option<B256>> = current_block.clone().body.into_iter().map(|transaction|{
-            if !withdrawal_transactions_hash.contains(&transaction.hash) {
-                Some(transaction.hash)
-            } else {
-                None
-            }
-        }).collect(); 
+        let normal_transactions: Vec<Option<B256>> = current_block
+            .clone()
+            .body
+            .into_iter()
+            .map(|transaction| {
+                if !withdrawal_transactions_hash.contains(&transaction.hash) {
+                    Some(transaction.hash)
+                } else {
+                    None
+                }
+            })
+            .collect();
 
         // Create the client input.
         let client_input = ClientExecutorInput {
@@ -230,7 +238,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
             withdrawal_txn_hashes: withdrawal_transactions_hash,
-            normal_transactions
+            normal_transactions,
         };
         tracing::info!("successfully generated client input");
 

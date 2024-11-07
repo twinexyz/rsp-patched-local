@@ -1,4 +1,3 @@
-use std::{collections::HashMap, iter::once};
 use eyre::Result;
 use itertools::Itertools;
 use reth_primitives::{revm_primitives::AccountInfo, Address, Block, Header, B256, U256};
@@ -7,6 +6,7 @@ use revm_primitives::{keccak256, Bytecode};
 use rsp_mpt::EthereumState;
 use rsp_witness_db::WitnessDb;
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, iter::once};
 
 /// The input for the client to execute a block and fully verify the STF (state transition
 /// function).
@@ -28,7 +28,7 @@ pub struct ClientExecutorInput {
     pub bytecodes: Vec<Bytecode>,
     /// status of transactions in the block. Ordered according to the order or the transactions
     pub withdrawal_txn_hashes: Vec<B256>,
-    pub normal_transactions: Vec<Option<B256>>
+    pub normal_transactions: Vec<Option<B256>>,
 }
 
 impl ClientExecutorInput {
