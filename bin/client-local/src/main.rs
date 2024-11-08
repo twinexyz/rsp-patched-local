@@ -31,16 +31,6 @@ pub fn main() {
     let mut receipt_root = Vec::from(block.receipts_root.as_slice());
     hash_vector.append(&mut receipt_root);
 
-    let deposit_txn = block.body.first();
-    let deposit_txn_hash = match deposit_txn {
-        Some(txn) => txn.hash.as_slice(),
-        None => &[0u8;32]
-    };
-
-    let num_deposit_txn = input.clone().deposit_txn_hashes.len().to_be_bytes();
-    let num_deposit_txn: FixedBytes<4> = FixedBytes::from_slice(&num_deposit_txn);
-    let mut num_deposit_txn = Vec::from(num_deposit_txn.as_slice());
-    hash_vector.append(&mut num_deposit_txn);
 
     for txn in input.clone().deposit_txn_hashes {
         let mut deposit_transaction = Vec::from(txn.as_slice());
