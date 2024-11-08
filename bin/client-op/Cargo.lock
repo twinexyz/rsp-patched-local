@@ -4882,18 +4882,21 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 name = "twine_precompiles"
 version = "0.1.0"
 dependencies = [
+ "alloy",
  "alloy-consensus 0.5.4",
  "alloy-primitives 0.8.0",
  "alloy-rlp",
  "alloy-sol-types 0.8.10",
  "alloy-trie 0.7.2",
  "ethereum_ssz 0.6.0",
+ "ethereum_ssz_derive 0.6.0",
  "hex",
  "reth-primitives",
  "revm",
  "serde",
  "serde_json",
  "sp1-verifier",
+ "ssz_types",
  "twine_tcp_lib",
 ]
 
