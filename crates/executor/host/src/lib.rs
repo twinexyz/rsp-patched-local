@@ -8,7 +8,7 @@ use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
-use revm_primitives::{address, FixedBytes};
+use revm_primitives::FixedBytes;
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
     OptimismVariant, Variant,
