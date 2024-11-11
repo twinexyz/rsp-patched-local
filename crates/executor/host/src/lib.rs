@@ -37,18 +37,19 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         &self,
         block_number: u64,
         variant: ChainVariant,
+        l2_messenger: revm_primitives::Address
     ) -> eyre::Result<ClientExecutorInput> {
         let client_input = match variant {
-            ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,
-            ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number).await,
-            ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number).await,
-            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await,
+            ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number, l2_messenger).await,
+            ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number, l2_messenger).await,
+            ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number, l2_messenger).await,
+            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number, l2_messenger).await,
         }?;
 
         Ok(client_input)
     }
 
-    async fn execute_variant<V>(&self, block_number: u64) -> eyre::Result<ClientExecutorInput>
+    async fn execute_variant<V>(&self, block_number: u64, l2_messenger: revm_primitives::Address) -> eyre::Result<ClientExecutorInput>
     where
         V: Variant,
     {
@@ -210,8 +211,8 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let filter = filter
             .from_block(block_number)
             .to_block(block_number)
-            .events(["L1Deposit(),L1Forced()"])
-            .address(address!("D059478a564dF1353A54AC0D0e7Fc55A90b92246"));
+            .events(["L1Deposit(),ForcedWithdrawal()"])
+            .address(l2_messenger);
 
             
         let logs = self.provider.get_logs(&filter).await.unwrap();

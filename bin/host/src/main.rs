@@ -1,5 +1,6 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
+use reth_primitives::{hex::FromHex, revm_primitives};
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
@@ -83,9 +84,11 @@ async fn main() -> eyre::Result<()> {
             // Setup the host executor.
             let host_executor = HostExecutor::new(provider);
 
+            let l2_messenger = std::env::var("L2_MESSENGER").expect("need to setup L1_MESSENGER address in teh .env file.");
+            let l2_messenger = revm_primitives::Address::from_hex(l2_messenger).expect("could not load the address");
             // Execute the host.
             let client_input = host_executor
-                .execute(args.block_number, variant)
+                .execute(args.block_number, variant, l2_messenger)
                 .await
                 .expect("failed to execute host");
 

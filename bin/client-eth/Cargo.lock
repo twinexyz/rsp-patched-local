@@ -3859,7 +3859,7 @@ dependencies = [
  "rsp-witness-db",
  "serde",
  "serde_json",
- "sp1-verifier",
+ "sp1-verifier 3.0.0 (git+https://github.com/succinctlabs/sp1.git?rev=b8abe3298b92eec38d6f1b7f7e51a1329b272148)",
  "tokio",
  "twine_precompiles",
  "url",
@@ -4368,6 +4368,18 @@ dependencies = [
 [[package]]
 name = "sp1-verifier"
 version = "3.0.0"
+source = "git+https://github.com/succinctlabs/sp1.git?branch=dev#4503ebda58adc82452dae48a5d57fd7752da1d40"
+dependencies = [
+ "hex",
+ "lazy_static",
+ "sha2 0.10.8",
+ "substrate-bn-succinct",
+ "thiserror-no-std",
+]
+
+[[package]]
+name = "sp1-verifier"
+version = "3.0.0"
 source = "git+https://github.com/succinctlabs/sp1.git?rev=b8abe3298b92eec38d6f1b7f7e51a1329b272148#b8abe3298b92eec38d6f1b7f7e51a1329b272148"
 dependencies = [
  "hex",
@@ -4509,6 +4521,23 @@ dependencies = [
 name = "substrate-bn"
 version = "0.6.0"
 source = "git+https://github.com/sp1-patches/bn?branch=patch-v0.6.0#201cc196da216656044e61fea7f68707b6896662"
+dependencies = [
+ "bytemuck",
+ "byteorder",
+ "cfg-if",
+ "crunchy",
+ "lazy_static",
+ "num-bigint 0.4.6",
+ "rand",
+ "rustc-hex",
+ "sp1-lib 3.1.0",
+]
+
+[[package]]
+name = "substrate-bn-succinct"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "114c855c26ad0594c830129cb868552fb41415603a6133276c2ecdd9e5ef4255"
 dependencies = [
  "bytemuck",
  "byteorder",
@@ -4895,7 +4924,7 @@ dependencies = [
  "revm",
  "serde",
  "serde_json",
- "sp1-verifier",
+ "sp1-verifier 3.0.0 (git+https://github.com/succinctlabs/sp1.git?branch=dev)",
  "ssz_types",
  "twine_tcp_lib",
 ]
