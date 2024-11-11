@@ -211,7 +211,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let filter = filter
             .from_block(block_number)
             .to_block(block_number)
-            .events(["L1Deposit(),ForcedWithdrawal()"])
+            .events(["L1Deposit()","ForcedWithdrawal()"])
             .address(l2_messenger);
 
             
@@ -222,8 +222,10 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         for log in logs {
             if let Some(x) = log.topic0() {
                 if x.clone() == FixedBytes::from_hex("0xd6b80d48d3fe11588fde323f1e848406dc544a67dd7b25a0803a67b8b657dc50").unwrap() {
+                    tracing::info!("deposit transaction found in block {}", block_number);
                     deposit_transaction_hash.push(log.transaction_hash.unwrap());
                 } else if x.clone() == FixedBytes::from_hex("0x57c51e0bf8f0638b8272d8ca0aef90217b3ee07a87e1dab78f14ae704193914c").unwrap() { 
+                    tracing::info!("withdrawal transaction foundin block {}", block_number);
                     withdrawal_transactions_hash.push(log.transaction_hash.unwrap());  
                 }
             }
