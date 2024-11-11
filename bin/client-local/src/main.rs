@@ -22,6 +22,9 @@ pub fn main() {
     let mut block_hash = Vec::from(block.hash_slow().as_slice());
     hash_vector.append(&mut block_hash);
 
+    let mut previous_state_root = Vec::from(input.previous_state_root.as_slice());
+    hash_vector.append(&mut previous_state_root); 
+
     let mut state_root = Vec::from(block.state_root.as_slice()); 
     hash_vector.append(&mut state_root);
 

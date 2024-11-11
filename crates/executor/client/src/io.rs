@@ -25,6 +25,7 @@ pub struct ClientExecutorInput {
     /// Requests to account state and storage slots.
     pub state_requests: HashMap<Address, Vec<U256>>,
     /// Account bytecodes.
+    pub previous_state_root: B256,
     pub bytecodes: Vec<Bytecode>,
     pub deposit_txn_hashes: Vec<B256>,
     pub withdrawal_txn_hashes: Vec<B256>,

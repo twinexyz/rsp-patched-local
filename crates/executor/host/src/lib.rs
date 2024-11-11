@@ -246,6 +246,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
 
         // Create the client input.
         let client_input = ClientExecutorInput {
+            previous_state_root: previous_block.header.state_root,
             current_block: V::pre_process_block(&current_block),
             ancestor_headers,
             parent_state: state,
