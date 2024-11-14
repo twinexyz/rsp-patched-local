@@ -28,6 +28,8 @@ struct HostArgs {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
+    #[clap(long)]
+    l2_messenger: String,
     #[clap(flatten)]
     provider: ProviderArgs,
     /// Whether to generate a proof or just execute the block.
@@ -84,7 +86,7 @@ async fn main() -> eyre::Result<()> {
             // Setup the host executor.
             let host_executor = HostExecutor::new(provider);
 
-            let l2_messenger = std::env::var("L2_MESSENGER").expect("need to setup L1_MESSENGER address in teh .env file.");
+            let l2_messenger = args.l2_messenger;
             let l2_messenger = revm_primitives::Address::from_hex(l2_messenger).expect("could not load the address");
             // Execute the host.
             let client_input = host_executor
