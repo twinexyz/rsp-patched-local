@@ -221,10 +221,10 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let mut deposit_transaction_hash: Vec<B256> = vec![];
         for log in logs {
             if let Some(x) = log.topic0() {
-                if x.clone() == FixedBytes::from_hex("0xd6b80d48d3fe11588fde323f1e848406dc544a67dd7b25a0803a67b8b657dc50").unwrap() {
+                if x.clone() == FixedBytes::from_hex("0x3c6f9030ecd0d507289249e5efdd65427b91cc0f56c127b91422d34bf6eeff6b").unwrap() {
                     tracing::info!("deposit transaction found in block {}", block_number);
                     deposit_transaction_hash.push(log.transaction_hash.unwrap());
-                } else if x.clone() == FixedBytes::from_hex("0x57c51e0bf8f0638b8272d8ca0aef90217b3ee07a87e1dab78f14ae704193914c").unwrap() { 
+                } else if x.clone() == FixedBytes::from_hex("0xbd396ccece4537170eab191bdfeb816d74fdb54954b5c65378b8058ee6595446").unwrap() { 
                     tracing::info!("withdrawal transaction foundin block {}", block_number);
                     withdrawal_transactions_hash.push(log.transaction_hash.unwrap());  
                 }
