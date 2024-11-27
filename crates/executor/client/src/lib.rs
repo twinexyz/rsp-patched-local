@@ -331,7 +331,6 @@ impl Variant for DevnetVarient {
         )
         .executor(cache_db)
         .execute((executor_block_input, executor_difficulty).into())?;
-        println!("crates/executor/client/src/lib.rs:: did this execute??");
         Ok(returning)
     }
 
@@ -341,12 +340,6 @@ impl Variant for DevnetVarient {
         receipts: &[Receipt],
         requests: &[Request],
     ) -> eyre::Result<()> {
-        println!("cumulative gas used in the header {}", block.header.gas_used);
-        println!("cumulative gas used in the block {}", block.gas_used);
-        for r in receipts {
-            println!("the cumulative gas used is {}", r.cumulative_gas_used);
-        }
-
         Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
     }
 }

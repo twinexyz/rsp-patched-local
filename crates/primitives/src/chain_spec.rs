@@ -54,10 +54,8 @@ pub fn mainnet() -> ChainSpec {
 }
 
 pub fn devnet() -> ChainSpec {
-    println!("crates/primitives/src/chain_spec.rs:: this should have called the genesis block.");
     let genesis = include_str!("../res/genesis/genesis.json");
     let genesis: reth_primitives::Genesis = serde_json::from_str(genesis).unwrap();
-    println!("crates/primitives/src/chain_spec.rs:: no issues in loading the genesis block.");
     ChainSpec {
         chain: Chain::dev(),
         genesis,

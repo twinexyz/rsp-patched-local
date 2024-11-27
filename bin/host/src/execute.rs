@@ -25,8 +25,6 @@ pub fn process_execution_report(
     execution_report: ExecutionReport,
     report_path: PathBuf,
 ) -> eyre::Result<()> {
-    println!("\nExecution report:\n{}", execution_report);
-
     let chain_id = variant.chain_id();
     let executed_block = client_input.current_block;
     let block_number = executed_block.header.number;
