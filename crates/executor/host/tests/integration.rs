@@ -1,4 +1,5 @@
 use alloy_provider::ReqwestProvider;
+use revm_primitives::address;
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, ClientExecutor, EthereumVariant, LineaVariant,
     OptimismVariant, Variant,
@@ -47,7 +48,7 @@ where
 
     // Execute the host.
     let client_input =
-        host_executor.execute(block_number, variant).await.expect("failed to execute host");
+        host_executor.execute(block_number, variant, address!("5FC8d32690cc91D4c39d9d3abcBD16989F875707")).await.expect("failed to execute host");
 
     // Setup the client executor.
     let client_executor = ClientExecutor;

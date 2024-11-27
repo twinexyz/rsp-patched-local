@@ -22,6 +22,8 @@ use revm::precompile::{
     bn128, kzg_point_evaluation, secp256k1, Precompile, PrecompileResult, PrecompileWithAddress,
 };
 use std::sync::Arc;
+use twine_precompiles::precompiles::verifier::precompiles as verifier_precompile;
+use twine_precompiles::precompiles::bridge_transactions::transactions::precompiles as transaction_precompile;
 
 /// Create an annotated precompile that tracks the cycle count of a precompile.
 /// This is useful for tracking how many cycles in total are consumed by calls to a given
@@ -88,7 +90,7 @@ impl CustomEvmConfig {
     /// [ConfigureEvm::evm_with_inspector]
     ///
     /// This will use the default mainnet precompiles and add additional precompiles.
-    fn set_precompiles<EXT, DB>(handler: &mut EvmHandler<'_, EXT, DB>)
+    pub fn set_precompiles<EXT, DB>(handler: &mut EvmHandler<'_, EXT, DB>)
     where
         DB: Database,
     {
@@ -106,6 +108,9 @@ impl CustomEvmConfig {
                 ANNOTATED_KZG_PROOF,
             ]);
 
+            // Twine Node precompiles.
+            loaded_precompiles.extend(verifier_precompile());
+            loaded_precompiles.extend(transaction_precompile());
             loaded_precompiles
         });
     }

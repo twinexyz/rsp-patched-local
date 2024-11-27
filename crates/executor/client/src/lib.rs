@@ -5,8 +5,9 @@ mod utils;
 
 pub mod custom;
 
-use std::{borrow::BorrowMut, fmt::Display};
+use std::{borrow::BorrowMut, fmt::Display, hash::Hash};
 
+use alloy_rlp::{RlpDecodable, RlpEncodable};
 use custom::CustomEvmConfig;
 use eyre::eyre;
 use io::ClientExecutorInput;
@@ -18,9 +19,10 @@ use reth_evm_ethereum::execute::EthExecutorProvider;
 use reth_evm_optimism::OpExecutorProvider;
 use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
-use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Header, Receipt, Receipts, Request};
+use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
 use revm_primitives::{address, U256};
+use serde::{Deserialize, Serialize};
 
 /// Chain ID for Ethereum Mainnet.
 pub const CHAIN_ID_ETH_MAINNET: u64 = 0x1;
@@ -104,8 +106,16 @@ impl ChainVariant {
     }
 }
 
+#[derive(
+    Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, RlpEncodable, RlpDecodable,
+)]
+#[rlp(trailing)]
+pub struct ExecutorOutput {
+    pub block: Block,
+}
+
 impl ClientExecutor {
-    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<Header>
+    pub fn execute<V>(&self, mut input: ClientExecutorInput) -> eyre::Result<ExecutorOutput>
     where
         V: Variant,
     {
@@ -166,6 +176,7 @@ impl ClientExecutor {
         // Derive the block header.
         //
         // Note: the receipts root and gas used are verified by `validate_block_post_execution`.
+        let mut block = input.current_block.clone();
         let mut header = input.current_block.header.clone();
         header.parent_hash = input.parent_header().hash_slow();
         header.ommers_hash = proofs::calculate_ommers_root(&input.current_block.ommers);
@@ -181,7 +192,11 @@ impl ClientExecutor {
         header.requests_root =
             input.current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
 
-        Ok(header)
+        block.header = header;
+
+        // filter withdrawal transaction
+
+        Ok(ExecutorOutput { block })
     }
 }
 
@@ -316,7 +331,6 @@ impl Variant for DevnetVarient {
         )
         .executor(cache_db)
         .execute((executor_block_input, executor_difficulty).into())?;
-        println!("crates/executor/client/src/lib.rs:: did this execute??");
         Ok(returning)
     }
 
@@ -329,3 +343,5 @@ impl Variant for DevnetVarient {
         Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
     }
 }
+
+

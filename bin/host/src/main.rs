@@ -1,6 +1,6 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use reth_primitives::B256;
+use reth_primitives::{hex::FromHex, revm_primitives};
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
@@ -13,10 +13,7 @@ use std::{
     path::PathBuf,
 };
 use tracing_subscriber::{
-    filter::EnvFilter,
-    fmt,
-    prelude::__tracing_subscriber_SubscriberExt,
-    util::SubscriberInitExt,
+    filter::EnvFilter, fmt, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
 
 mod execute;
@@ -31,6 +28,8 @@ struct HostArgs {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
+    #[clap(long)]
+    l2_messenger: String,
     #[clap(flatten)]
     provider: ProviderArgs,
     /// Whether to generate a proof or just execute the block.
@@ -87,9 +86,11 @@ async fn main() -> eyre::Result<()> {
             // Setup the host executor.
             let host_executor = HostExecutor::new(provider);
 
+            let l2_messenger = args.l2_messenger;
+            let l2_messenger = revm_primitives::Address::from_hex(l2_messenger).expect("could not load the address");
             // Execute the host.
             let client_input = host_executor
-                .execute(args.block_number, variant)
+                .execute(args.block_number, variant, l2_messenger)
                 .await
                 .expect("failed to execute host");
 
@@ -133,12 +134,7 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (mut public_values, execution_report) =
-        client.execute(&pk.elf, stdin.clone()).run().unwrap();
-
-    // Read the block hash.
-    let block_hash = public_values.read::<B256>();
-    println!("success: block_hash={block_hash}");
+    let (_, execution_report) = client.execute(&pk.elf, stdin.clone()).run().unwrap();
 
     // Process the execute report, print it out, and save data to a CSV specified by
     // report_path.
@@ -149,7 +145,7 @@ async fn main() -> eyre::Result<()> {
         // given the size of these programs.
         println!("Starting proof generation.");
         println!("vk:: {:?}", vk.bytes32());
-        let proof = client.prove(&pk, stdin).plonk().run().expect("Proving should work.");
+        let proof = client.prove(&pk, stdin).groth16().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
         let proof_dir = "proofs";

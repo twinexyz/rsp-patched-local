@@ -1,5 +1,3 @@
-use std::{collections::HashMap, iter::once};
-
 use eyre::Result;
 use itertools::Itertools;
 use reth_primitives::{revm_primitives::AccountInfo, Address, Block, Header, B256, U256};
@@ -8,6 +6,7 @@ use revm_primitives::{keccak256, Bytecode};
 use rsp_mpt::EthereumState;
 use rsp_witness_db::WitnessDb;
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, iter::once};
 
 /// The input for the client to execute a block and fully verify the STF (state transition
 /// function).
@@ -26,7 +25,11 @@ pub struct ClientExecutorInput {
     /// Requests to account state and storage slots.
     pub state_requests: HashMap<Address, Vec<U256>>,
     /// Account bytecodes.
+    pub previous_state_root: B256,
     pub bytecodes: Vec<Bytecode>,
+    pub deposit_txn_hashes: Vec<B256>,
+    pub withdrawal_txn_hashes: Vec<B256>,
+    pub normal_transactions: Vec<Option<B256>>,
 }
 
 impl ClientExecutorInput {
@@ -161,7 +164,7 @@ pub trait WitnessInput {
                 eyre::bail!("non-consecutive blocks");
             }
 
-            if parent_header.hash_slow() != child_header.parent_hash {
+            if parent_header.hash_slow() != child_header.parent_hash && parent_header.number != 0 {
                 eyre::bail!("parent hash mismatch");
             }
 

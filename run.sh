@@ -41,7 +41,7 @@ trimmed_account=${cleaned#0x}
 
 # Define the output_balance and history_storage entries as JSON objects
 output_balance=$(jq -n --arg key "$trimmed_account" \
-    '{($key): { "balance": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7" }}')
+    '{($key): { "balance": "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7" }}')
 
 history_storage=$(jq -n '{
   "0aae40965e6800cd9b1f4b05ff21581047e3f91e": {
@@ -74,7 +74,7 @@ echo "Do a few transactions to simulate blocks"
 # Creates 10 transactions from faucet wallet to a random address, creates 10 blocks
 for i in {1..10}
 do 
-    geth attach --exec "eth.sendTransaction({from: eth.accounts[0], to: '0xd19de419e6d0ca1907c09b9ee25a071d007a80b4', value: web3.toWei(50, 'ether')})" http://127.0.0.1:8545
+    geth attach --exec "eth.sendTransaction({from: eth.accounts[0], to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', value: web3.toWei(50, 'ether')})" http://127.0.0.1:8545
     sleep 2
 done
 
