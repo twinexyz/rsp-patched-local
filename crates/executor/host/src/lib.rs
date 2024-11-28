@@ -211,7 +211,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let filter = filter
             .from_block(block_number)
             .to_block(block_number)
-            .events(["L1Deposit()","ForcedWithdrawal()"])
+            .events(["L1Deposit()","ForcedWithdrawal()", "LayerzeroPayload(bytes32)"])
             .address(l2_messenger);
 
             
