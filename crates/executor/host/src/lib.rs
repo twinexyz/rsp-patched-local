@@ -1,11 +1,14 @@
 use std::{collections::BTreeSet, marker::PhantomData};
 
-use alloy_provider::{network::{AnyNetwork, ReceiptResponse}, Provider};
+use alloy::hex::FromHex;
+use alloy_provider::{network::AnyNetwork, Provider};
+use alloy_rpc_types::Filter;
 use alloy_transport::Transport;
 use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
+use revm_primitives::FixedBytes;
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
     OptimismVariant, Variant,
@@ -34,18 +37,19 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         &self,
         block_number: u64,
         variant: ChainVariant,
+        l2_messenger: revm_primitives::Address
     ) -> eyre::Result<ClientExecutorInput> {
         let client_input = match variant {
-            ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,
-            ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number).await,
-            ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number).await,
-            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await,
+            ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number, l2_messenger).await,
+            ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number, l2_messenger).await,
+            ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number, l2_messenger).await,
+            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number, l2_messenger).await,
         }?;
 
         Ok(client_input)
     }
 
-    async fn execute_variant<V>(&self, block_number: u64) -> eyre::Result<ClientExecutorInput>
+    async fn execute_variant<V>(&self, block_number: u64, l2_messenger: revm_primitives::Address) -> eyre::Result<ClientExecutorInput>
     where
         V: Variant,
     {
@@ -76,7 +80,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             block_number,
             current_block.body.len()
         );
-        // TODO: block validation fails from here 
+        // TODO: block validation fails from here
         let executor_block_input = V::pre_process_block(&current_block)
             .with_recovered_senders()
             .ok_or(eyre!("failed to recover senders"))?;
@@ -186,7 +190,6 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
 
         // Assert the derived header is correct.
         assert_eq!(header.hash_slow(), current_block.header.hash_slow(), "header mismatch");
-
         // Log the result.
         tracing::info!(
             "successfully executed block: block_number={}, block_hash={}, state_root={}",
@@ -204,25 +207,58 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             ancestor_headers.push(block.inner.header.try_into()?);
         }
 
-        let mut status_list = Vec::new();
-        for txn in current_block.clone().body {
-            let receipts = self.provider.get_transaction_receipt(txn.hash).await.unwrap().unwrap();
-            let status = receipts.status();
-            let status = match status {
-                true => 1u8,
-                false => 0u8
-            };
-            status_list.push(status);
+        let filter = Filter::new();
+        let filter = filter
+            .from_block(block_number)
+            .to_block(block_number)
+            .events(["L1Deposit()","ForcedWithdrawal()","LayerzeroPayload(uint256,bytes32)"])
+            .address(l2_messenger);
+
+            
+        let logs = self.provider.get_logs(&filter).await.unwrap();
+        let mut withdrawal_transactions_hash = Vec::new();
+        let mut deposit_transaction_hash = Vec::new();
+        let mut dvn_transactions_hash = Vec::new();
+        for log in logs {
+            if let Some(x) = log.topic0() {
+                if x.clone() == FixedBytes::from_hex("0x3c6f9030ecd0d507289249e5efdd65427b91cc0f56c127b91422d34bf6eeff6b").unwrap() {
+                    tracing::info!("deposit transaction found in block {}", block_number);
+                    deposit_transaction_hash.push(log.transaction_hash.unwrap());
+                } else if x.clone() == FixedBytes::from_hex("0xbd396ccece4537170eab191bdfeb816d74fdb54954b5c65378b8058ee6595446").unwrap() { 
+                    tracing::info!("withdrawal transaction foundin block {}", block_number);
+                    withdrawal_transactions_hash.push(log.transaction_hash.unwrap());  
+                } else if x.clone() == FixedBytes::from_hex("0x240614365f65d3aeadd37fe19b718a8f6ae8e729fa901fac5ab563d53ccb06bc").unwrap() { 
+                    tracing::info!("dvn transaction foundin block {}", block_number);
+                    dvn_transactions_hash.push(log.transaction_hash.unwrap()); 
+                }
+            }
         }
+
+        let normal_transactions: Vec<Option<B256>> = current_block
+            .clone()
+            .body
+            .into_iter()
+            .map(|transaction| {
+                if !withdrawal_transactions_hash.contains(&transaction.hash) && !deposit_transaction_hash.contains(&transaction.hash){
+                    Some(transaction.hash)
+                } else {
+                    None
+                }
+            })
+            .collect();
 
         // Create the client input.
         let client_input = ClientExecutorInput {
+            previous_state_root: previous_block.header.state_root,
             current_block: V::pre_process_block(&current_block),
             ancestor_headers,
             parent_state: state,
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
-            status_list
+            deposit_txn_hashes: deposit_transaction_hash,
+            withdrawal_txn_hashes: withdrawal_transactions_hash,
+            normal_transactions,
+            dvn_transactions: dvn_transactions_hash,
         };
         tracing::info!("successfully generated client input");
 

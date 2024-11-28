@@ -99,6 +99,7 @@ revm-interpreter = { version = "=10.0.1", default-features = false }
 revm-precompile = { version = "=11.0.1", default-features = false }
 
 # alloy
+alloy = { version = "0.5.4", features = ["full"] }
 alloy-primitives = "0.8.0"
 alloy-provider = { version = "0.3", default-features = false, features = [
     "reqwest",
@@ -107,7 +108,7 @@ alloy-provider = { version = "0.3", default-features = false, features = [
 alloy-rpc-types = { version = "0.3", default-features = false, features = [
     "eth",
 ] }
-alloy-sol-types = "0.8.0"
+alloy-sol-types = "0.8.10"
 alloy-rlp = "0.3.4"
 alloy-consensus = { version = "0.3", default-features = false }
 alloy-transport = { version = "0.3" }
@@ -116,10 +117,15 @@ alloy-transport-http = { version = "0.3", features = [
 ], default-features = false }
 alloy-eips = { version = "0.3", default-features = false }
 alloy-trie = "0.5.0"
+sp1-sdk = "3.0.0"
+sp1-helper = "3.1.0"
+twine_precompiles = {path="../twine/lib"}
+sp1-verifier = {git = "https://github.com/succinctlabs/sp1.git", rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
+ark-groth16 = {git = "https://github.com/arkworks-rs/groth16.git"}
+
 
 [workspace.lints]
-rust.missing_debug_implementations = "warn"
-rust.unreachable_pub = "warn"
-rust.unused_must_use = "deny"
-rust.rust_2018_idioms = { level = "deny", priority = -1 }
-rustdoc.all = "warn"
+rust = { missing_debug_implementations = "warn", unreachable_pub = "warn", unused_must_use = "deny", rust_2018_idioms = { level = "deny", priority = -1, all = "warn" } }
+
+[patch.crates-io]
+ethereum_hashing = { git = "https://github.com/Atamanov/ethereum_hashing.git"}
