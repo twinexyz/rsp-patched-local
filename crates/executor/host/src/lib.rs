@@ -211,7 +211,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let filter = filter
             .from_block(block_number)
             .to_block(block_number)
-            .events(["L1Deposit()","ForcedWithdrawal()", "LayerzeroPayload(bytes32)"])
+            .events(["L1Deposit()","ForcedWithdrawal()","LayerzeroPayload(uint256,bytes32)"])
             .address(l2_messenger);
 
             
@@ -227,7 +227,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
                 } else if x.clone() == FixedBytes::from_hex("0xbd396ccece4537170eab191bdfeb816d74fdb54954b5c65378b8058ee6595446").unwrap() { 
                     tracing::info!("withdrawal transaction foundin block {}", block_number);
                     withdrawal_transactions_hash.push(log.transaction_hash.unwrap());  
-                } else if x.clone() == FixedBytes::from_hex("0x855f98c406f7932eebcb65c94ba88ffcdd72735ef9d782cb39de6ffa77072f4a").unwrap() { 
+                } else if x.clone() == FixedBytes::from_hex("0x240614365f65d3aeadd37fe19b718a8f6ae8e729fa901fac5ab563d53ccb06bc").unwrap() { 
                     tracing::info!("dvn transaction foundin block {}", block_number);
                     dvn_transactions_hash.push(log.transaction_hash.unwrap()); 
                 }
