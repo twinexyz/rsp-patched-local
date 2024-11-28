@@ -239,7 +239,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             .body
             .into_iter()
             .map(|transaction| {
-                if !withdrawal_transactions_hash.contains(&transaction.hash) && !deposit_transaction_hash.contains(&transaction.hash){
+                if !withdrawal_transactions_hash.contains(&transaction.hash) && !deposit_transaction_hash.contains(&transaction.hash) && !dvn_transactions_hash.contains(&transaction.hash) {
                     Some(transaction.hash)
                 } else {
                     None
