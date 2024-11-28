@@ -50,6 +50,11 @@ pub fn main() {
         hash_vector.append(&mut txn_hash);
     }
 
+    for txn in input.clone().dvn_transactions {
+        let mut tx_hash = Vec::from(txn.as_slice());
+        hash_vector.append(&mut tx_hash);
+    }
+
     for txn in input.normal_transactions {
         match txn {
             Some(hash) => {

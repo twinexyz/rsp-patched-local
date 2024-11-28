@@ -217,8 +217,8 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             
         let logs = self.provider.get_logs(&filter).await.unwrap();
         let mut withdrawal_transactions_hash = Vec::new();
-
-        let mut deposit_transaction_hash: Vec<B256> = vec![];
+        let mut deposit_transaction_hash = Vec::new();
+        let mut dvn_transactions_hash = Vec::new();
         for log in logs {
             if let Some(x) = log.topic0() {
                 if x.clone() == FixedBytes::from_hex("0x3c6f9030ecd0d507289249e5efdd65427b91cc0f56c127b91422d34bf6eeff6b").unwrap() {
@@ -227,6 +227,9 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
                 } else if x.clone() == FixedBytes::from_hex("0xbd396ccece4537170eab191bdfeb816d74fdb54954b5c65378b8058ee6595446").unwrap() { 
                     tracing::info!("withdrawal transaction foundin block {}", block_number);
                     withdrawal_transactions_hash.push(log.transaction_hash.unwrap());  
+                } else if x.clone() == FixedBytes::from_hex("0x855f98c406f7932eebcb65c94ba88ffcdd72735ef9d782cb39de6ffa77072f4a").unwrap() { 
+                    tracing::info!("dvn transaction foundin block {}", block_number);
+                    dvn_transactions_hash.push(log.transaction_hash.unwrap()); 
                 }
             }
         }
@@ -254,8 +257,8 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             bytecodes: rpc_db.get_bytecodes(),
             deposit_txn_hashes: deposit_transaction_hash,
             withdrawal_txn_hashes: withdrawal_transactions_hash,
-
             normal_transactions,
+            dvn_transactions: dvn_transactions_hash,
         };
         tracing::info!("successfully generated client input");
 
