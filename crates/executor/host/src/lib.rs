@@ -3,12 +3,13 @@ use std::{collections::BTreeSet, marker::PhantomData};
 use alloy::hex::FromHex;
 use alloy_provider::{network::AnyNetwork, Provider};
 use alloy_rpc_types::Filter;
+use alloy_sol_types::SolEvent;
 use alloy_transport::Transport;
 use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
-use revm_primitives::FixedBytes;
+use revm_primitives::{FixedBytes, U256};
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
     OptimismVariant, Variant,
@@ -16,6 +17,8 @@ use rsp_client_executor::{
 use rsp_mpt::EthereumState;
 use rsp_primitives::account_proof::eip1186_proof_to_account_proof;
 use rsp_rpc_db::RpcDb;
+use utils::{Deposit, WithDraw, ETHEREUM_HOLESKY_CHAINID, ETHEREUM_MAINNET_CHAINID, ETHEREUM_SEPOLIA_CHAINID, SOLANA_CHAINID};
+mod utils;
 
 /// An executor that fetches data from a [Provider] to execute blocks in the [ClientExecutor].
 #[derive(Debug, Clone)]
@@ -211,29 +214,67 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let filter = filter
             .from_block(block_number)
             .to_block(block_number)
-            .events(["L1Deposit()","ForcedWithdrawal()","LayerzeroPayload(uint256,bytes32)"])
+            .events(["L1Deposit(bytes)","ForcedWithdrawal(bytes)","LayerzeroPayload(uint256,bytes32)"])
             .address(l2_messenger);
 
+        let ethereum_chains = vec![U256::from(ETHEREUM_MAINNET_CHAINID), U256::from(ETHEREUM_SEPOLIA_CHAINID), U256::from(ETHEREUM_HOLESKY_CHAINID)];
             
         let logs = self.provider.get_logs(&filter).await.unwrap();
         let mut withdrawal_transactions_hash = Vec::new();
         let mut deposit_transaction_hash = Vec::new();
         let mut dvn_transactions_hash = Vec::new();
+        let mut deposit_index = U256::from(0);
+        let mut withdraw_index = U256::from(0);
+        let mut withdraw_status = Vec::new();
+        let mut chain_id_eth = U256::from(0);
+
+        let mut solana_withdrawal_transactions_hash = Vec::new();
+        let mut solana_deposit_transaction_hash = Vec::new();
+        // let mut solana_dvn_transactions_hash = Vec::new();
+        let mut solana_deposit_index = U256::from(0);
+        let mut solana_withdraw_index = U256::from(0);
+        let mut solana_withdraw_status = Vec::new();
+        let mut chain_id_solana = U256::from(0);
+        
         for log in logs {
             if let Some(x) = log.topic0() {
                 if x.clone() == FixedBytes::from_hex("0x3c6f9030ecd0d507289249e5efdd65427b91cc0f56c127b91422d34bf6eeff6b").unwrap() {
                     tracing::info!("deposit transaction found in block {}", block_number);
-                    deposit_transaction_hash.push(log.transaction_hash.unwrap());
-                } else if x.clone() == FixedBytes::from_hex("0xbd396ccece4537170eab191bdfeb816d74fdb54954b5c65378b8058ee6595446").unwrap() { 
-                    tracing::info!("withdrawal transaction foundin block {}", block_number);
-                    withdrawal_transactions_hash.push(log.transaction_hash.unwrap());  
+                    let log = log.inner;
+                    let deposit_transaction = Deposit::decode_log(&log, true).unwrap();
+                    if ethereum_chains.contains(&deposit_transaction.chainId) {
+                        chain_id_eth = deposit_transaction.chainId;
+                        deposit_index = deposit_transaction.index;
+                        deposit_transaction_hash.push(deposit_transaction.combinedHash);
+                    } else if deposit_transaction.index == U256::from(SOLANA_CHAINID) {
+                        chain_id_solana = deposit_transaction.chainId;
+                        solana_deposit_index = deposit_transaction.index;
+                        solana_deposit_transaction_hash.push(deposit_transaction.combinedHash); 
+                    } else {
+                        panic!("invalid chain id");
+                    }
+                } else if x.clone() == FixedBytes::from_hex("0xbd396ccece4537170eab191bdfeb816d74fdb54954b5c65378b8058ee6595446").unwrap() {
+                    let log = log.inner;
+                    let withdraw_transaction = WithDraw::decode_log(&log, true).unwrap();
+                    if ethereum_chains.contains(&withdraw_transaction.chainId) { 
+                        withdraw_index = withdraw_transaction.index;
+                        withdraw_status = withdraw_transaction.statusBytes.to_vec();
+                        chain_id_eth =  withdraw_transaction.chainId;
+                        tracing::info!("withdrawal transaction foundin block {}", block_number);
+                        withdrawal_transactions_hash.push(withdraw_transaction.combinedHash);  
+                    } else if withdraw_transaction.chainId == U256::from(SOLANA_CHAINID) {
+                        solana_withdraw_index = withdraw_transaction.index;
+                        solana_withdraw_status = withdraw_transaction.statusBytes.to_vec();
+                        chain_id_solana = withdraw_transaction.chainId;
+                        tracing::info!("withdrawal transaction foundin block {}", block_number);
+                        solana_withdrawal_transactions_hash.push(withdraw_transaction.combinedHash);  
+                    }
                 } else if x.clone() == FixedBytes::from_hex("0x240614365f65d3aeadd37fe19b718a8f6ae8e729fa901fac5ab563d53ccb06bc").unwrap() { 
                     tracing::info!("dvn transaction foundin block {}", block_number);
                     dvn_transactions_hash.push(log.transaction_hash.unwrap()); 
                 }
             }
         }
-
         let normal_transactions: Vec<Option<B256>> = current_block
             .clone()
             .body
@@ -255,8 +296,18 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             parent_state: state,
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
+            eth_chain_id: chain_id_eth,
+            deposit_txn_index: deposit_index,
             deposit_txn_hashes: deposit_transaction_hash,
+            withdraw_txn_index: withdraw_index, 
+            withdraw_status,
             withdrawal_txn_hashes: withdrawal_transactions_hash,
+            solana_chain_id: chain_id_solana,
+            solana_deposit_txn_index: solana_deposit_index, 
+            solana_deposit_txn_hashes: solana_deposit_transaction_hash, 
+            solana_withdraw_txn_index: solana_withdraw_index, 
+            solana_withdraw_status,
+            solana_withdrawal_txn_hashes: solana_withdrawal_transactions_hash,
             normal_transactions,
             dvn_transactions: dvn_transactions_hash,
         };

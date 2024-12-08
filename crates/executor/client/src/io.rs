@@ -27,8 +27,18 @@ pub struct ClientExecutorInput {
     /// Account bytecodes.
     pub previous_state_root: B256,
     pub bytecodes: Vec<Bytecode>,
+    pub eth_chain_id: U256,
+    pub deposit_txn_index: U256,
     pub deposit_txn_hashes: Vec<B256>,
+    pub withdraw_txn_index: U256,
+    pub withdraw_status: Vec<u8>,
     pub withdrawal_txn_hashes: Vec<B256>,
+    pub solana_chain_id: U256,
+    pub solana_deposit_txn_index: U256,
+    pub solana_deposit_txn_hashes: Vec<B256>,
+    pub solana_withdraw_txn_index: U256,
+    pub solana_withdraw_status: Vec<u8>,
+    pub solana_withdrawal_txn_hashes: Vec<B256>,
     pub normal_transactions: Vec<Option<B256>>,
     pub dvn_transactions: Vec<B256>,
 }

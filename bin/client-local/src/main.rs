@@ -34,21 +34,51 @@ pub fn main() {
     let mut receipt_root = Vec::from(block.receipts_root.as_slice());
     hash_vector.append(&mut receipt_root);
 
+    let mut chain_id_eth = input.clone().eth_chain_id.to_be_bytes_vec();
+    hash_vector.append(&mut chain_id_eth);
+
+    let mut eth_deposit_index = input.clone().deposit_txn_index.to_be_bytes_vec();
+    hash_vector.append(&mut eth_deposit_index);
 
     for txn in input.clone().deposit_txn_hashes {
         let mut deposit_transaction = Vec::from(txn.as_slice());
         hash_vector.append(&mut deposit_transaction);
     }
 
-    let len = input.clone().withdrawal_txn_hashes.len().to_be_bytes();
-    let len: FixedBytes<4> = FixedBytes::from_slice(&len);
-    let mut len = Vec::from(len.as_slice());
-    hash_vector.append(&mut len);
+    let mut eth_withdraw_index = input.clone().withdraw_txn_index.to_be_bytes_vec();
+    hash_vector.append(&mut eth_withdraw_index); 
+
+    let mut eth_withdraw_status = input.clone().withdraw_status;
+    hash_vector.append(&mut eth_withdraw_index);  
 
     for txn in input.clone().withdrawal_txn_hashes {
         let mut txn_hash = Vec::from(txn.as_slice());
         hash_vector.append(&mut txn_hash);
     }
+
+
+    let mut chain_id_solana = input.clone().solana_chain_id.to_be_bytes_vec();
+    hash_vector.append(&mut chain_id_solana);
+
+    let mut solana_deposit_index = input.clone().solana_deposit_txn_index.to_be_bytes_vec();
+    hash_vector.append(&mut solana_deposit_index);
+
+    for txn in input.clone().solana_deposit_txn_hashes {
+        let mut deposit_transaction = Vec::from(txn.as_slice());
+        hash_vector.append(&mut deposit_transaction);
+    }
+
+    let mut eth_withdraw_index = input.clone().solana_withdraw_txn_index.to_be_bytes_vec();
+    hash_vector.append(&mut eth_withdraw_index); 
+
+    let mut eth_withdraw_status = input.clone().solana_withdraw_status;
+    hash_vector.append(&mut eth_withdraw_index);  
+
+    for txn in input.clone().solana_withdrawal_txn_hashes {
+        let mut txn_hash = Vec::from(txn.as_slice());
+        hash_vector.append(&mut txn_hash);
+    }
+
 
     for txn in input.clone().dvn_transactions {
         let mut tx_hash = Vec::from(txn.as_slice());

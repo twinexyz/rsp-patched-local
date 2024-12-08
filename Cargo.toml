@@ -108,7 +108,7 @@ alloy-provider = { version = "0.3", default-features = false, features = [
 alloy-rpc-types = { version = "0.3", default-features = false, features = [
     "eth",
 ] }
-alloy-sol-types = "0.8.10"
+alloy-sol-types = "0.8.0"
 alloy-rlp = "0.3.4"
 alloy-consensus = { version = "0.3", default-features = false }
 alloy-transport = { version = "0.3" }
@@ -122,6 +122,7 @@ sp1-helper = "3.1.0"
 twine_precompiles = {path="../twine/lib"}
 sp1-verifier = {git = "https://github.com/succinctlabs/sp1.git", rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
 ark-groth16 = {git = "https://github.com/arkworks-rs/groth16.git"}
+contracts-metadata ={ git = "https://github.com/twinexyz/contracts-metadata.git", rev = "996b7775ffc7b9e9be54206e0e3305acc475ef6d"}
 
 
 [workspace.lints]
