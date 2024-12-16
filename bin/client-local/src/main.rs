@@ -35,37 +35,5 @@ pub fn main() {
     hash_vector.append(&mut receipt_root);
 
 
-    for txn in input.clone().deposit_txn_hashes {
-        let mut deposit_transaction = Vec::from(txn.as_slice());
-        hash_vector.append(&mut deposit_transaction);
-    }
-
-    let len = input.clone().withdrawal_txn_hashes.len().to_be_bytes();
-    let len: FixedBytes<4> = FixedBytes::from_slice(&len);
-    let mut len = Vec::from(len.as_slice());
-    hash_vector.append(&mut len);
-
-    for txn in input.clone().withdrawal_txn_hashes {
-        let mut txn_hash = Vec::from(txn.as_slice());
-        hash_vector.append(&mut txn_hash);
-    }
-
-    for txn in input.clone().dvn_transactions {
-        let mut tx_hash = Vec::from(txn.as_slice());
-        hash_vector.append(&mut tx_hash);
-    }
-
-    for txn in input.normal_transactions {
-        match txn {
-            Some(hash) => {
-                let mut hash = Vec::from(hash.as_slice());
-                hash_vector.append(&mut hash);
-            },
-            None => {
-                continue;
-            }
-        }
-    }
-
     sp1_zkvm::io::commit_slice(&hash_vector);
 }
