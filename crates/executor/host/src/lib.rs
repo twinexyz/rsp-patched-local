@@ -1,4 +1,3 @@
-use std::{collections::BTreeSet, marker::PhantomData};
 use alloy_provider::{network::AnyNetwork, Provider};
 use alloy_transport::Transport;
 use eyre::{eyre, Ok};
@@ -12,6 +11,7 @@ use rsp_client_executor::{
 use rsp_mpt::EthereumState;
 use rsp_primitives::account_proof::eip1186_proof_to_account_proof;
 use rsp_rpc_db::RpcDb;
+use std::{collections::BTreeSet, marker::PhantomData};
 
 /// An executor that fetches data from a [Provider] to execute blocks in the [ClientExecutor].
 #[derive(Debug, Clone)]
@@ -32,7 +32,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
     pub async fn execute(
         &self,
         block_number: u64,
-        variant: ChainVariant
+        variant: ChainVariant,
     ) -> eyre::Result<ClientExecutorInput> {
         let client_input = match variant {
             ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,

@@ -343,5 +343,3 @@ impl Variant for DevnetVarient {
         Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
     }
 }
-
-

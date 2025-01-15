@@ -27,6 +27,8 @@ struct HostArgs {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
+    #[clap(long)]
+    to_block: u64,
     #[clap(flatten)]
     provider: ProviderArgs,
     /// Whether to generate a proof or just execute the block.
@@ -74,7 +76,7 @@ async fn main() -> eyre::Result<()> {
     )?;
 
     let client_input = match (client_input_from_cache, provider_config.rpc_url) {
-        (Some(client_input_from_cache), _) => client_input_from_cache,
+        (Some(client_input_from_cache), _) => vec![client_input_from_cache],
         (None, Some(rpc_url)) => {
             // Cache not found but we have RPC
             // Setup the provider.
@@ -83,10 +85,15 @@ async fn main() -> eyre::Result<()> {
             // Setup the host executor.
             let host_executor = HostExecutor::new(provider);
             // Execute the host.
-            let client_input = host_executor
-                .execute(args.block_number, variant)
-                .await
-                .expect("failed to execute host");
+            let mut client_input = Vec::new();
+
+            for i in args.block_number..args.to_block {
+                let cl_input = host_executor
+                    .execute(i, variant)
+                    .await
+                    .expect("failed to execute host");
+                client_input.push(cl_input);
+            }
 
             if let Some(cache_dir) = args.cache_dir {
                 let input_folder = cache_dir.join(format!("input/{}", provider_config.chain_id));

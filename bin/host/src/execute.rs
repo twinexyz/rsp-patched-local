@@ -7,9 +7,9 @@ use std::{fs::OpenOptions, path::PathBuf};
 #[derive(Serialize, Deserialize)]
 struct ExecutionReportData {
     chain_id: u64,
-    block_number: u64,
-    gas_used: u64,
-    tx_count: usize,
+    block_number: Vec<u64>,
+    gas_used: Vec<u64>,
+    tx_count: Vec<usize>,
     number_cycles: u64,
     number_syscalls: u64,
     bn_add_cycles: u64,
@@ -21,15 +21,21 @@ struct ExecutionReportData {
 /// Given an execution report, print it out and write it to a CSV specified by report_path.
 pub fn process_execution_report(
     variant: ChainVariant,
-    client_input: ClientExecutorInput,
+    client_input: Vec<ClientExecutorInput>,
     execution_report: ExecutionReport,
     report_path: PathBuf,
 ) -> eyre::Result<()> {
     let chain_id = variant.chain_id();
-    let executed_block = client_input.current_block;
-    let block_number = executed_block.header.number;
-    let gas_used = executed_block.header.gas_used;
-    let tx_count = executed_block.body.len();
+    let mut block_number = Vec::new();
+    let mut gas_used_per_block = Vec::new();
+    let mut tx_count_per_block = Vec::new();
+
+    () = client_input.iter().map(|client_input|{
+        block_number.push(client_input.current_block.number);
+        gas_used_per_block.push(client_input.current_block.gas_used);
+        tx_count_per_block.push(client_input.current_block.body.len());
+    }).collect();
+    
     let number_cycles = execution_report.total_instruction_count();
     let number_syscalls = execution_report.total_syscall_count();
 
@@ -47,8 +53,8 @@ pub fn process_execution_report(
     let report_data = ExecutionReportData {
         chain_id,
         block_number,
-        gas_used,
-        tx_count,
+        gas_used: gas_used_per_block,
+        tx_count: tx_count_per_block,
         number_cycles,
         number_syscalls,
         bn_add_cycles,
