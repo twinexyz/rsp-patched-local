@@ -27,10 +27,6 @@ pub struct ClientExecutorInput {
     /// Account bytecodes.
     pub previous_state_root: B256,
     pub bytecodes: Vec<Bytecode>,
-    pub deposit_txn_hashes: Vec<B256>,
-    pub withdrawal_txn_hashes: Vec<B256>,
-    pub normal_transactions: Vec<Option<B256>>,
-    pub dvn_transactions: Vec<B256>,
 }
 
 impl ClientExecutorInput {

@@ -51,6 +51,17 @@ dependencies = [
 
 [[package]]
 name = "ahash"
+version = "0.7.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
+dependencies = [
+ "getrandom",
+ "once_cell",
+ "version_check",
+]
+
+[[package]]
+name = "ahash"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e89da841a80418a9b391ebaea17f5c112ffaaa96f621d2c285b5174da76b9011"
@@ -306,7 +317,7 @@ dependencies = [
  "ethereum_ssz_derive 0.5.4",
  "once_cell",
  "serde",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -324,7 +335,7 @@ dependencies = [
  "derive_more 1.0.0",
  "once_cell",
  "serde",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -342,7 +353,7 @@ dependencies = [
  "derive_more 1.0.0",
  "once_cell",
  "serde",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1896,6 +1907,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "blake3"
+version = "1.5.4"
+source = "git+https://github.com/twinexyz/BLAKE3#7a7c6d2111c3b1f4522b822cf233e4d5d6e975d5"
+dependencies = [
+ "arrayref",
+ "arrayvec",
+ "cc",
+ "cfg-if",
+ "constant_time_eq",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1955,12 +1978,131 @@ dependencies = [
 ]
 
 [[package]]
+name = "borsh"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15bf3650200d8bffa99015595e10f1fbd17de07abbc25bb067da79e769939bfa"
+dependencies = [
+ "borsh-derive 0.9.3",
+ "hashbrown 0.11.2",
+]
+
+[[package]]
+name = "borsh"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "115e54d64eb62cdebad391c19efc9dce4981c690c85a33a12199d99bb9546fee"
+dependencies = [
+ "borsh-derive 0.10.4",
+ "hashbrown 0.13.2",
+]
+
+[[package]]
+name = "borsh"
+version = "1.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2506947f73ad44e344215ccd6403ac2ae18cd8e046e581a441bf8d199f257f03"
+dependencies = [
+ "borsh-derive 1.5.3",
+ "cfg_aliases",
+]
+
+[[package]]
+name = "borsh-derive"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6441c552f230375d18e3cc377677914d2ca2b0d36e52129fe15450a2dce46775"
+dependencies = [
+ "borsh-derive-internal 0.9.3",
+ "borsh-schema-derive-internal 0.9.3",
+ "proc-macro-crate 0.1.5",
+ "proc-macro2",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "borsh-derive"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "831213f80d9423998dd696e2c5345aba6be7a0bd8cd19e31c5243e13df1cef89"
+dependencies = [
+ "borsh-derive-internal 0.10.4",
+ "borsh-schema-derive-internal 0.10.4",
+ "proc-macro-crate 0.1.5",
+ "proc-macro2",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "borsh-derive"
+version = "1.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2593a3b8b938bd68373196c9832f516be11fa487ef4ae745eb282e6a56a7244"
+dependencies = [
+ "once_cell",
+ "proc-macro-crate 3.2.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.87",
+]
+
+[[package]]
+name = "borsh-derive-internal"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5449c28a7b352f2d1e592a8a28bf139bc71afb0764a14f3c02500935d8c44065"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "borsh-derive-internal"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65d6ba50644c98714aa2a70d13d7df3cd75cd2b523a2b452bf010443800976b3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "borsh-schema-derive-internal"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdbd5696d8bfa21d53d9fe39a714a18538bad11492a42d066dbbc395fb1951c0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "borsh-schema-derive-internal"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "276691d96f063427be83e6692b86148e488ebba9f48f77788724ca027ba3b6d4"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "bs58"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
+
+[[package]]
 name = "bs58"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
 dependencies = [
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "tinyvec",
 ]
 
@@ -2170,13 +2312,13 @@ version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b6be4a5df2098cd811f3194f64ddb96c267606bffd9689ac7b0160097b01ad3"
 dependencies = [
- "bs58",
+ "bs58 0.5.1",
  "coins-core",
  "digest 0.10.7",
  "hmac",
  "k256",
  "serde",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
 ]
 
@@ -2192,7 +2334,7 @@ dependencies = [
  "once_cell",
  "pbkdf2 0.12.2",
  "rand",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
 ]
 
@@ -2204,14 +2346,14 @@ checksum = "5286a0843c21f8367f7be734f89df9b822e0321d8bcce8d6e735aadff7d74979"
 dependencies = [
  "base64 0.21.7",
  "bech32",
- "bs58",
+ "bs58 0.5.1",
  "digest 0.10.7",
  "generic-array 0.14.7",
  "hex",
  "ripemd",
  "serde",
  "serde_derive",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha3",
  "thiserror",
 ]
@@ -2432,6 +2574,21 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.87",
+]
+
+[[package]]
+name = "curve25519-dalek-ng"
+version = "4.1.1"
+source = "git+https://github.com/sp1-patches/curve25519-dalek-ng.git?branch=patch-v4.1.1#3fb3e7f6047ddeef0f0c9212f4604bd30d64bd28"
+dependencies = [
+ "anyhow",
+ "byteorder",
+ "cfg-if",
+ "digest 0.9.0",
+ "rand_core",
+ "sp1-lib 3.1.0",
+ "subtle-ng",
+ "zeroize",
 ]
 
 [[package]]
@@ -2779,6 +2936,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ed25519-consensus"
+version = "2.1.0"
+source = "git+https://github.com/sp1-patches/ed25519-consensus?tag=ed25519_consensus-v2.1.0-patch-v1#2b2c4b43344bc4daf5b1326f367f2d9d661eeabb"
+dependencies = [
+ "curve25519-dalek-ng",
+ "hex",
+ "rand_core",
+ "serde",
+ "sha2 0.9.9",
+ "thiserror",
+ "zeroize",
+]
+
+[[package]]
 name = "either"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2822,6 +2993,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "engine"
+version = "0.1.0"
+dependencies = [
+ "alloy-sol-types 0.7.7",
+ "bincode",
+ "blake3 1.5.4 (git+https://github.com/twinexyz/BLAKE3)",
+ "borsh 1.5.3",
+ "bs58 0.5.1",
+ "ed25519-consensus",
+ "hex",
+ "serde",
+ "serde_arrays",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-v0.10.8)",
+ "thiserror",
+ "tracing",
+ "tracing-subscriber",
+ "twine-solana-sdk",
 ]
 
 [[package]]
@@ -2922,7 +3116,7 @@ dependencies = [
  "scrypt",
  "serde",
  "serde_json",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha3",
  "thiserror",
  "uuid",
@@ -2982,7 +3176,7 @@ version = "0.7.0"
 source = "git+https://github.com/Atamanov/ethereum_hashing.git#7cce430c34c65e56af7ae9cfbb1ad5a4da59956e"
 dependencies = [
  "cpufeatures",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -3107,7 +3301,7 @@ dependencies = [
  "serde",
  "serde_json",
  "syn 2.0.87",
- "toml",
+ "toml 0.8.19",
  "walkdir",
 ]
 
@@ -3233,7 +3427,7 @@ dependencies = [
  "eth-keystore",
  "ethers-core",
  "rand",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
  "tracing",
 ]
@@ -3652,6 +3846,15 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
+dependencies = [
+ "ahash 0.7.8",
+]
+
+[[package]]
+name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
@@ -3661,6 +3864,9 @@ name = "hashbrown"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
+dependencies = [
+ "ahash 0.8.11",
+]
 
 [[package]]
 name = "hashbrown"
@@ -3668,7 +3874,7 @@ version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
 dependencies = [
- "ahash",
+ "ahash 0.8.11",
  "allocator-api2",
  "serde",
 ]
@@ -4305,7 +4511,7 @@ dependencies = [
  "ecdsa",
  "elliptic-curve",
  "once_cell",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "signature",
 ]
 
@@ -4336,7 +4542,7 @@ checksum = "0850eb19206463a61bede4f7b7e6b21731807137619044b1f3c287ebcfe2b3b0"
 dependencies = [
  "ff 0.13.0",
  "hex",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp1_bls12_381",
  "spin 0.9.8",
 ]
@@ -4639,6 +4845,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51d515d32fb182ee37cda2ccdcb92950d6a3c2893aa280e540671c2cd0f3b1d9"
 
 [[package]]
+name = "num-derive"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.87",
+]
+
+[[package]]
 name = "num-integer"
 version = "0.1.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4919,7 +5136,7 @@ dependencies = [
  "ecdsa",
  "elliptic-curve",
  "primeorder",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -4953,7 +5170,7 @@ version = "0.1.4-succinct"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cc4cb69ae54a279bbbd477566d1bdb71aa879b528fd658d0fcfc36f54b00217c"
 dependencies = [
- "blake3",
+ "blake3 1.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "p3-symmetric",
 ]
 
@@ -5419,6 +5636,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "precompile-lib"
+version = "0.1.0"
+dependencies = [
+ "blake3 1.5.4 (git+https://github.com/twinexyz/BLAKE3)",
+ "borsh 1.5.3",
+ "engine",
+ "hex",
+ "tracing",
+ "twine-solana-sdk",
+]
+
+[[package]]
 name = "prettyplease"
 version = "0.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5449,6 +5678,15 @@ dependencies = [
  "impl-serde",
  "scale-info",
  "uint",
+]
+
+[[package]]
+name = "proc-macro-crate"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d6ea3c4595b96363c13943497db34af4460fb474a95c43f4446ad341b8c9785"
+dependencies = [
+ "toml 0.5.11",
 ]
 
 [[package]]
@@ -6362,7 +6600,7 @@ dependencies = [
  "revm-primitives",
  "ripemd",
  "secp256k1",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "substrate-bn 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -6878,7 +7116,7 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9a8ef13a93c54d20580de1e5c413e624e53121d42fc7e2c11d10ef7f8b02367"
 dependencies = [
- "ahash",
+ "ahash 0.8.11",
  "cfg-if",
  "hashbrown 0.13.2",
 ]
@@ -6898,7 +7136,7 @@ dependencies = [
  "hmac",
  "pbkdf2 0.11.0",
  "salsa20",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -7009,6 +7247,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f55c3193aca71c12ad7890f1785d2b73e1b9f63a0bbc353c08ef26fe03fc56b5"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde_arrays"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38636132857f68ec3d5f3eb121166d2af33cb55174c4d5ff645db6165cbef0fd"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "387cc504cb06bb40a96c8e04e951fe01854cf6bc921053c954e4a606d9675c6a"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -7150,6 +7406,16 @@ name = "sha2"
 version = "0.10.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "793db75ad2bcafc3ffa7c68b215fee268f537982cd901d132f89c6343f3a3dc8"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest 0.10.7",
+]
+
+[[package]]
+name = "sha2"
+version = "0.10.8"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-v0.10.8#1f224388fdede7cef649bce0d63876d1a9e3f515"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -7458,7 +7724,7 @@ dependencies = [
  "p3-poseidon2",
  "p3-symmetric",
  "serde",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -7624,7 +7890,7 @@ dependencies = [
  "p3-symmetric",
  "serde",
  "serde_json",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp1-core-machine",
  "sp1-recursion-compiler",
  "sp1-stark",
@@ -7716,7 +7982,7 @@ source = "git+https://github.com/succinctlabs/sp1.git?branch=dev#4503ebda58adc82
 dependencies = [
  "hex",
  "lazy_static",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "substrate-bn-succinct",
  "thiserror-no-std",
 ]
@@ -7728,7 +7994,7 @@ source = "git+https://github.com/succinctlabs/sp1.git?rev=b8abe3298b92eec38d6f1b
 dependencies = [
  "hex",
  "lazy_static",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?tag=substrate_bn-v0.6.0-patch-v2)",
  "thiserror-no-std",
 ]
@@ -7896,6 +8162,12 @@ checksum = "7dcb1ed7b8330c5eed5441052651dd7a12c75e2ed88f2ec024ae1fa3a5e59945"
 dependencies = [
  "zeroize",
 ]
+
+[[package]]
+name = "subtle-ng"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "734676eb262c623cec13c3155096e08d1f8f29adce39ba17948b18dad1e54142"
 
 [[package]]
 name = "syn"
@@ -8264,6 +8536,15 @@ dependencies = [
 
 [[package]]
 name = "toml"
+version = "0.5.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4f7f0dd8d50a853a531c426359045b1998f04219d88799810762cd4ad314234"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "toml"
 version = "0.8.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1ed1f98e3fdc28d6d910e6737ae6ab1a93bf1985935a1193e68f93eeb68d24e"
@@ -8485,6 +8766,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "twine-solana-sdk"
+version = "0.1.0"
+source = "git+https://github.com/twinexyz/twine-solana-sdk?branch=main#1c17df9d0f37d23342931c09029ffa997fadd521"
+dependencies = [
+ "bincode",
+ "blake3 1.5.4 (git+https://github.com/twinexyz/BLAKE3)",
+ "borsh 0.10.4",
+ "borsh 0.9.3",
+ "borsh 1.5.3",
+ "bs58 0.4.0",
+ "bytemuck",
+ "hex",
+ "log",
+ "num-derive",
+ "num-traits",
+ "parking_lot",
+ "rand",
+ "serde",
+ "serde_bytes",
+ "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-v0.10.8)",
+ "smallvec",
+ "thiserror",
+]
+
+[[package]]
 name = "twine_precompiles"
 version = "0.1.0"
 dependencies = [
@@ -8494,15 +8800,18 @@ dependencies = [
  "alloy-rlp",
  "alloy-sol-types 0.8.11",
  "alloy-trie 0.7.2",
+ "borsh 1.5.3",
  "ethereum_ssz 0.6.0",
  "ethereum_ssz_derive 0.6.0",
  "hex",
+ "precompile-lib",
  "reth-primitives",
  "revm",
  "serde",
  "serde_json",
  "sp1-verifier 3.0.0 (git+https://github.com/succinctlabs/sp1.git?branch=dev)",
  "ssz_types",
+ "twine-solana-sdk",
  "twine_tcp_lib",
 ]
 
@@ -9290,7 +9599,7 @@ dependencies = [
  "pasta_curves 0.5.1",
  "rand",
  "serde",
- "sha2 0.10.8",
+ "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha3",
  "subtle",
 ]
