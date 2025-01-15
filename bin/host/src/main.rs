@@ -27,8 +27,6 @@ struct HostArgs {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
-    #[clap(long)]
-    l2_messenger: String,
     #[clap(flatten)]
     provider: ProviderArgs,
     /// Whether to generate a proof or just execute the block.
