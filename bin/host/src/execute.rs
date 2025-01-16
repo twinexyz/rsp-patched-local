@@ -30,12 +30,15 @@ pub fn process_execution_report(
     let mut gas_used_per_block = Vec::new();
     let mut tx_count_per_block = Vec::new();
 
-    () = client_input.iter().map(|client_input|{
-        block_number.push(client_input.current_block.number);
-        gas_used_per_block.push(client_input.current_block.gas_used);
-        tx_count_per_block.push(client_input.current_block.body.len());
-    }).collect();
-    
+    () = client_input
+        .iter()
+        .map(|client_input| {
+            block_number.push(client_input.current_block.number);
+            gas_used_per_block.push(client_input.current_block.gas_used);
+            tx_count_per_block.push(client_input.current_block.body.len());
+        })
+        .collect();
+
     let number_cycles = execution_report.total_instruction_count();
     let number_syscalls = execution_report.total_syscall_count();
 

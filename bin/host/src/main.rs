@@ -28,7 +28,7 @@ struct HostArgs {
     #[clap(long)]
     block_number: u64,
     #[clap(long)]
-    to_block: u64,
+    to_block: Option<u64>,
     #[clap(flatten)]
     provider: ProviderArgs,
     /// Whether to generate a proof or just execute the block.
@@ -86,10 +86,19 @@ async fn main() -> eyre::Result<()> {
             let host_executor = HostExecutor::new(provider);
             // Execute the host.
             let mut client_input = Vec::new();
+            let to_block = match args.to_block {
+                Some(to_block) => to_block,
+                None => args.block_number,
+            };
 
-            for i in args.block_number..args.to_block {
+            let blocks = host_executor
+                .get_desired_blocks(args.block_number, to_block)
+                .await
+                .expect("failed to get desired blocks from RPC");
+
+            for i in 0..blocks.len() - 1 {
                 let cl_input = host_executor
-                    .execute(i, variant)
+                    .execute(blocks[i].clone(), blocks[i + 1].clone(), variant)
                     .await
                     .expect("failed to execute host");
                 client_input.push(cl_input);
@@ -115,7 +124,7 @@ async fn main() -> eyre::Result<()> {
     };
 
     // Generate the proof.
-    let client = ProverClient::new();
+    let client = ProverClient::from_env();
 
     // Setup the proving key and verification key.
     let (pk, vk) = client.setup(match variant {
@@ -135,7 +144,7 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (_, execution_report) = client.execute(&pk.elf, stdin.clone()).run().unwrap();
+    let (_, execution_report) = client.execute(&pk.elf, &stdin).run().unwrap();
 
     // Process the execute report, print it out, and save data to a CSV specified by
     // report_path.
@@ -146,7 +155,7 @@ async fn main() -> eyre::Result<()> {
         // given the size of these programs.
         println!("Starting proof generation.");
         println!("vk:: {:?}", vk.bytes32());
-        let proof = client.prove(&pk, stdin).groth16().run().expect("Proving should work.");
+        let proof = client.prove(&pk, &stdin).groth16().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
         let proof_dir = "proofs";

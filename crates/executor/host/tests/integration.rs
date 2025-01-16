@@ -45,9 +45,16 @@ where
     // Setup the host executor.
     let host_executor = HostExecutor::new(provider);
 
+    let blocks = host_executor
+        .get_desired_blocks(block_number, block_number)
+        .await
+        .expect("could not get desired blocks form RPC");
+
     // Execute the host.
-    let client_input =
-        host_executor.execute(block_number, variant).await.expect("failed to execute host");
+    let client_input = host_executor
+        .execute(blocks[0].clone(), blocks[1].clone(), variant)
+        .await
+        .expect("failed to execute host");
 
     // Setup the client executor.
     let client_executor = ClientExecutor;

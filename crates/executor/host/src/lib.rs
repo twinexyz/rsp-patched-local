@@ -31,36 +31,56 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
     /// Executes the block with the given block number.
     pub async fn execute(
         &self,
-        block_number: u64,
+        previous_block: Block,
+        current_block: Block,
         variant: ChainVariant,
     ) -> eyre::Result<ClientExecutorInput> {
         let client_input = match variant {
-            ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,
-            ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number).await,
-            ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number).await,
-            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await,
+            ChainVariant::Ethereum => {
+                self.execute_variant::<EthereumVariant>(previous_block, current_block).await
+            }
+            ChainVariant::Optimism => {
+                self.execute_variant::<OptimismVariant>(previous_block, current_block).await
+            }
+            ChainVariant::Linea => {
+                self.execute_variant::<LineaVariant>(previous_block, current_block).await
+            }
+            ChainVariant::Devnet => {
+                self.execute_variant::<DevnetVarient>(previous_block, current_block).await
+            }
         }?;
 
         Ok(client_input)
     }
 
-    async fn execute_variant<V>(&self, block_number: u64) -> eyre::Result<ClientExecutorInput>
+    pub async fn get_desired_blocks(
+        &self,
+        from_block: u64,
+        to_block: u64,
+    ) -> eyre::Result<Vec<Block>> {
+        let mut blocks = vec![];
+        for block_number in from_block - 1..to_block + 1 {
+            let block = self
+                .provider
+                .get_block_by_number(block_number.into(), true)
+                .await?
+                .map(|block| Block::try_from(block.inner))
+                .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
+            blocks.push(block);
+        }
+        Ok(blocks)
+    }
+
+    async fn execute_variant<V>(
+        &self,
+        previous_block: Block,
+        current_block: Block,
+    ) -> eyre::Result<ClientExecutorInput>
     where
         V: Variant,
     {
         // Fetch the current block and the previous block from the provider.
-        let current_block = self
-            .provider
-            .get_block_by_number(block_number.into(), true)
-            .await?
-            .map(|block| Block::try_from(block.inner))
-            .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
-        let previous_block = self
-            .provider
-            .get_block_by_number((block_number - 1).into(), true)
-            .await?
-            .map(|block| Block::try_from(block.inner))
-            .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
+        let block_number = current_block.header.number;
 
         // Setup the spec for the block executor.
         let spec = V::spec();
