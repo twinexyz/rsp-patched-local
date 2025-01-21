@@ -1059,7 +1059,7 @@ pub fn transition_proofs_to_tries(
         let fini_proofs = proofs.get(address).unwrap();
 
         // assure that addresses can be deleted from the state trie
-        add_orphaned_leafs(address, &fini_proofs.proof, &mut state_nodes)?;
+        add_orphaned_leafs(address, &fini_proofs.proof, &mut HashMap::from_iter(state_nodes))?;
 
         // if no slots are provided, return the trie only consisting of the storage root
         let storage_root = proof.storage_root;
@@ -1087,7 +1087,7 @@ pub fn transition_proofs_to_tries(
 
         // assure that slots can be deleted from the storage trie
         for storage_proof in &fini_proofs.storage_proofs {
-            add_orphaned_leafs(storage_proof.key.0, &storage_proof.proof, &mut storage_nodes)?;
+            add_orphaned_leafs(storage_proof.key.0, &storage_proof.proof, &mut HashMap::from_iter(storage_nodes))?;
         }
         // create the storage trie, from all the relevant nodes
         let storage_trie = resolve_nodes(&storage_root_node, &storage_nodes);
@@ -1095,6 +1095,7 @@ pub fn transition_proofs_to_tries(
 
         storage.insert(B256::from(&keccak(address)), storage_trie);
     }
+    let state_nodes = HashMap::from_iter(state_nodes);
     let state_trie = resolve_nodes(&state_root_node, &state_nodes);
     assert_eq!(state_trie.hash(), state_root);
 

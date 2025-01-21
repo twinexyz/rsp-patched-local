@@ -69,59 +69,58 @@ rsp-mpt = { path = "./crates/mpt" }
 rsp-primitives = { path = "./crates/primitives" }
 
 # reth
-reth-primitives = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false, features = [
+reth-primitives = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false, features = [
     "alloy-compat",
     "optimism",
     "std",
 ] }
-reth-codecs = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-consensus = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-evm = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-revm = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false, features = [
+reth-codecs = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-consensus = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-evm = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-revm = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false, features = [
     "std",
 ] }
-reth-node-ethereum = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-evm-ethereum = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false, features = [
+reth-node-ethereum = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-evm-ethereum = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false, features = [
     "std",
 ] }
-reth-evm-optimism = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false, features = [
+reth-evm-optimism = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false, features = [
     "optimism",
 ] }
-reth-storage-errors = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false, features = [
+reth-storage-errors = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false, features = [
     "std",
 ] }
-reth-trie = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-trie-common = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-chainspec = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-optimism-chainspec = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-execution-errors = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-execution-types = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-db = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-errors = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-ethereum-consensus = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false }
-reth-optimism-consensus = { git = "https://github.com/sp1-patches/reth", tag = "rsp-20240830", default-features = false, features = [
+reth-trie = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-trie-common = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-chainspec = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-optimism-chainspec = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-execution-errors = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-execution-types = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-db = {git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-errors = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-ethereum-consensus = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false }
+reth-optimism-consensus = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120", default-features = false, features = [
     "optimism",
 ] }
 
 # revm
-revm = { version = "14.0.0", features = [
+revm = { version = "14.0.3", features = [
     "optimism",
     "std",
     "serde",
     "kzg-rs",
 ], default-features = false }
-revm-primitives = { version = "9.0.0", features = [
+revm-primitives = { version = "10.0.0", features = [
     "std",
     "serde",
 ], default-features = false }
 revm-inspectors = "0.6"
-revm-interpreter = { version = "=10.0.1", default-features = false }
-revm-precompile = { version = "=11.0.1", default-features = false }
+revm-interpreter = { version = "10.0.3", default-features = false }
+revm-precompile = { version = "11.0.3", default-features = false }
 
 # sp1
 sp1-sdk = "4.0.0"
 sp1-helper = "4.0.0"
-sp1-verifier = {git = "https://github.com/succinctlabs/sp1.git", rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
 
 # local dependencies
 twine_precompiles = {path="../twine/lib"}
@@ -132,3 +131,4 @@ rust = { missing_debug_implementations = "warn", unreachable_pub = "warn", unuse
 
 [patch.crates-io]
 ethereum_hashing = { git = "https://github.com/Atamanov/ethereum_hashing.git"}
+reth-trie = {git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250120"}

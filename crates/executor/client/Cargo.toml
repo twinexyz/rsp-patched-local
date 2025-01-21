@@ -47,7 +47,6 @@ itertools = "0.13.0"
 url = { workspace = true }
 futures = { workspace = true }
 
-sp1-verifier = { workspace = true }
 twine_precompiles = { workspace = true }
 
 [dev-dependencies]
