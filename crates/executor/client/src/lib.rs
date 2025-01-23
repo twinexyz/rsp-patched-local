@@ -8,6 +8,7 @@ pub mod custom;
 use std::{borrow::BorrowMut, fmt::Display, hash::Hash};
 
 use alloy_rlp::{RlpDecodable, RlpEncodable};
+use alloy_sol_types::{sol, SolValue};
 use custom::CustomEvmConfig;
 use eyre::eyre;
 use io::ClientExecutorInput;
@@ -21,7 +22,7 @@ use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
 use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
 use revm::{db::CacheDB, Database};
-use revm_primitives::{address, U256};
+use revm_primitives::{address, FixedBytes, U256};
 use serde::{Deserialize, Serialize};
 
 /// Chain ID for Ethereum Mainnet.
@@ -341,5 +342,70 @@ impl Variant for DevnetVarient {
         requests: &[Request],
     ) -> eyre::Result<()> {
         Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PublicCommitment {
+    pub from_block: u64,
+    pub to_block: u64,
+    pub batch_hash: FixedBytes<32>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BlockInfo {
+    pub previous_block: FixedBytes<32>,
+    pub block_hash: FixedBytes<32>,
+    pub transaction_root: FixedBytes<32>,
+    pub receipt_root: FixedBytes<32>,
+}
+
+sol! {
+    struct SolBlockInfo {
+       bytes32 previous_block;
+       bytes32 block_hash;
+       bytes32 transaction_root;
+       bytes32 receipt_root;
+    }
+
+    struct SolPublicCommitment {
+        uint64 from_block;
+        uint64 to_block;
+        bytes32 batch_hash;
+    }
+}
+
+impl BlockInfo {
+    pub fn abi_encode_packed(&self) -> Vec<u8> {
+        let sol_block_info = SolBlockInfo::from(self.clone());
+        sol_block_info.abi_encode_packed()
+    }
+}
+
+impl From<BlockInfo> for SolBlockInfo {
+    fn from(value: BlockInfo) -> Self {
+        Self {
+            previous_block: value.previous_block,
+            block_hash: value.block_hash,
+            transaction_root: value.transaction_root,
+            receipt_root: value.receipt_root,
+        }
+    }
+}
+
+impl PublicCommitment {
+    pub fn abi_encode_packed(&self) -> Vec<u8> {
+        let sol_pub_commitment = SolPublicCommitment::from(self.clone());
+        sol_pub_commitment.abi_encode_packed()
+    }
+}
+
+impl From<PublicCommitment> for SolPublicCommitment {
+    fn from(value: PublicCommitment) -> Self {
+        Self {
+            from_block: value.from_block,
+            to_block: value.to_block,
+            batch_hash: value.batch_hash,
+        }
     }
 }

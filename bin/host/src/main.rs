@@ -76,7 +76,9 @@ async fn main() -> eyre::Result<()> {
     )?;
 
     let (client_input, to_block) = match (client_input_from_cache, provider_config.rpc_url) {
-        (Some(client_input_from_cache), _) => (vec![client_input_from_cache], args.to_block.unwrap()),
+        (Some(client_input_from_cache), _) => {
+            (vec![client_input_from_cache], args.to_block.unwrap())
+        }
         (None, Some(rpc_url)) => {
             // Cache not found but we have RPC
             // Setup the provider.
@@ -166,7 +168,8 @@ async fn main() -> eyre::Result<()> {
         }
 
         let proof_json = serde_json::to_string(&proof).unwrap();
-        let file_name = format!("{}/execution_proof_{}_{}.proof", proof_dir, args.block_number, to_block);
+        let file_name =
+            format!("{}/execution_proof_{}_{}.proof", proof_dir, args.block_number, to_block);
         let mut proof_file = File::create(&file_name).unwrap();
         proof_file.write_all(proof_json.as_bytes()).unwrap();
 
