@@ -2,7 +2,7 @@
 sp1_zkvm::entrypoint!(main);
 
 use revm_primitives::{keccak256, FixedBytes};
-use rsp_client_executor::{io::ClientExecutorInput, BlockInfo, ClientExecutor, DevnetVarient, PublicCommitment, SolBlockInfo};
+use rsp_client_executor::{io::ClientExecutorInput, BlockInfo, ClientExecutor, DevnetVarient, PublicCommitment};
 // use revm_primitives::FixedBytes;
 
 
