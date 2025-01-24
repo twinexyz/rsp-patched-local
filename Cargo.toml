@@ -21,28 +21,7 @@ exclude = ["**/target"]
 version = "0.1.0"
 
 [workspace.dependencies]
-# alloy
-alloy = { version = "0.5.4", features = ["full"] }
-alloy-primitives = "0.8.0"
-alloy-provider = { version = "0.3", default-features = false, features = [
-    "reqwest",
-    "reqwest-rustls-tls",
-] }
-alloy-rpc-types = { version = "0.3", default-features = false, features = [
-    "eth",
-] }
-alloy-sol-types = "0.8.10"
-alloy-rlp = "0.3.4"
-alloy-consensus = { version = "0.3", default-features = false }
-alloy-transport = { version = "0.3" }
-alloy-transport-http = { version = "0.3", features = [
-    "reqwest-rustls-tls",
-], default-features = false }
-alloy-eips = { version = "0.3", default-features = false }
-alloy-trie = "0.5.0"
-
 eyre = "0.6"
-anyhow = { version = "1.0.86", default-features = false }
 tracing = { version = "0.1.40", default-features = false }
 cfg-if = "1.0.0"
 spin = { version = "0.9.8", features = ["mutex"] }
@@ -123,6 +102,25 @@ sp1-helper = "4.0.0"
 twine-reth-evm = { path = "../twine/crates/reth/evm" }
 sp1-verifier = { git = "https://github.com/succinctlabs/sp1.git", rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
 ark-groth16 = { git = "https://github.com/arkworks-rs/groth16.git" }
+
+# alloy
+alloy-primitives = { version = "0.8.4", features = ["sha3-keccak"] }
+alloy-provider = { version = "0.3", default-features = false, features = [
+    "reqwest",
+    "reqwest-rustls-tls",
+] }
+alloy-rpc-types = { version = "0.3", default-features = false, features = [
+    "eth",
+] }
+alloy-rlp = "0.3.4"
+alloy-transport = { version = "0.3" }
+alloy-transport-http = { version = "0.3", features = [
+    "reqwest-rustls-tls",
+], default-features = false }
+alloy-eips = { version = "0.3", default-features = false }
+alloy-trie = "0.5.0"
+alloy-sol-types = "0.8.10"
+alloy = { version = "0.5.4", features = ["full"] }
 
 
 [workspace.lints]

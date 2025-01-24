@@ -1,17 +1,19 @@
+mod error;
+pub use error::Error as HostError;
+
+use std::{collections::BTreeSet, marker::PhantomData};
+use eyre::eyre;
 use alloy_provider::{network::AnyNetwork, Provider};
 use alloy_transport::Transport;
-use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
-    OptimismVariant, Variant,
+    io::ClientExecutorInput, ChainVariant, DevnetVariant, EthereumVariant, LineaVariant, OptimismVariant, SepoliaVariant, Variant
 };
 use rsp_mpt::EthereumState;
 use rsp_primitives::account_proof::eip1186_proof_to_account_proof;
 use rsp_rpc_db::RpcDb;
-use std::{collections::BTreeSet, marker::PhantomData};
 
 /// An executor that fetches data from a [Provider] to execute blocks in the [ClientExecutor].
 #[derive(Debug, Clone)]
@@ -46,7 +48,10 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
                 self.execute_variant::<LineaVariant>(previous_block, current_block).await
             }
             ChainVariant::Devnet => {
-                self.execute_variant::<DevnetVarient>(previous_block, current_block).await
+                self.execute_variant::<DevnetVariant>(previous_block, current_block).await
+            }
+            ChainVariant::Sepolia => {
+                self.execute_variant::<SepoliaVariant>(previous_block, current_block).await 
             }
         }?;
 
@@ -98,7 +103,8 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         // TODO: block validation fails from here
         let executor_block_input = V::pre_process_block(&current_block)
             .with_recovered_senders()
-            .ok_or(eyre!("failed to recover senders"))?;
+            .ok_or(HostError::FailedToRecoverSenders)?;
+
         let executor_difficulty = current_block.header.difficulty;
         let executor_output = V::execute(&executor_block_input, executor_difficulty, cache_db)?;
         // Validate the block post execution.
@@ -181,7 +187,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             mutated_state.state_root()
         };
         if state_root != current_block.state_root {
-            eyre::bail!("mismatched state root");
+            return Err(HostError::StateRootMismatch(state_root, current_block.state_root).into());
         }
 
         // Derive the block header.
@@ -204,7 +210,12 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
 
         // Assert the derived header is correct.
-        assert_eq!(header.hash_slow(), current_block.header.hash_slow(), "header mismatch");
+        let constructed_header_hash = header.hash_slow();
+        let target_hash = current_block.header.hash_slow();
+        if constructed_header_hash != target_hash {
+            return Err(HostError::HeaderMismatch(constructed_header_hash, target_hash).into());
+        }
+
         // Log the result.
         tracing::info!(
             "successfully executed block: block_number={}, block_hash={}, state_root={}",
@@ -218,7 +229,12 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let mut ancestor_headers = vec![];
         tracing::info!("fetching {} ancestor headers", block_number - oldest_ancestor);
         for height in (oldest_ancestor..=(block_number - 1)).rev() {
-            let block = self.provider.get_block_by_number(height.into(), false).await?.unwrap();
+            let block = self
+                .provider
+                .get_block_by_number(height.into(), false)
+                .await?
+                .ok_or(HostError::ExpectedBlock(height))?;
+
             ancestor_headers.push(block.inner.header.try_into()?);
         }
 

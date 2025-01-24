@@ -2,7 +2,7 @@
 sp1_zkvm::entrypoint!(main);
 
 use revm_primitives::{keccak256, FixedBytes};
-use rsp_client_executor::{io::ClientExecutorInput, BlockInfo, ClientExecutor, DevnetVarient, PublicCommitment};
+use rsp_client_executor::{io::ClientExecutorInput, BlockInfo, ClientExecutor, DevnetVariant, PublicCommitment};
 // use revm_primitives::FixedBytes;
 
 
@@ -15,7 +15,7 @@ pub fn main() {
     let executor = ClientExecutor;
     let mut executor_outputs = Vec::new();
     for i in input {
-        let output = executor.execute::<DevnetVarient>(i).expect("failed to execute client");
+        let output = executor.execute::<DevnetVariant>(i).expect("failed to execute client");
         executor_outputs.push(output);
     }
 

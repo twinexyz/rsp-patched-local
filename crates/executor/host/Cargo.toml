@@ -17,6 +17,7 @@ url = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+thiserror.workspace = true
 
 # workspace
 rsp-rpc-db = { workspace = true }

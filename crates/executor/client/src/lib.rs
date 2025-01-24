@@ -2,28 +2,30 @@
 pub mod io;
 #[macro_use]
 mod utils;
-
 pub mod custom;
+pub mod error;
 
 use std::{borrow::BorrowMut, fmt::Display, hash::Hash};
 
 use alloy_rlp::{RlpDecodable, RlpEncodable};
 use alloy_sol_types::{sol, SolValue};
 use custom::CustomEvmConfig;
-use eyre::eyre;
+use error::ClientError;
 use io::ClientExecutorInput;
 use reth_chainspec::ChainSpec;
-use reth_errors::ProviderError;
+use reth_errors::{ConsensusError, ProviderError};
 use reth_ethereum_consensus::validate_block_post_execution as validate_block_post_execution_ethereum;
-use reth_evm::execute::{BlockExecutionOutput, BlockExecutorProvider, Executor};
+use reth_evm::execute::{
+    BlockExecutionError, BlockExecutionOutput, BlockExecutorProvider, Executor,
+};
 use reth_evm_ethereum::execute::EthExecutorProvider;
 use reth_evm_optimism::OpExecutorProvider;
 use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
-use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Receipt, Receipts, Request};
-use revm::{db::CacheDB, Database};
-use revm_primitives::{address, FixedBytes, U256};
 use serde::{Deserialize, Serialize};
+use reth_primitives::{proofs, Block, BlockWithSenders, Bloom, Header, Receipt, Receipts, Request};
+use revm::{db::WrapDatabaseRef, Database};
+use revm_primitives::{address, FixedBytes, U256};
 
 /// Chain ID for Ethereum Mainnet.
 pub const CHAIN_ID_ETH_MAINNET: u64 = 0x1;
@@ -36,6 +38,8 @@ pub const CHAIN_ID_LINEA_MAINNET: u64 = 0xe708;
 
 /// Chain ID for Devnet
 pub const CHAIN_ID_DEVNET: u64 = 0x539;
+/// Chain ID for Sepolia.
+pub const CHAIN_ID_SEPOLIA: u64 = 0xaa36a7;
 
 /// An executor that executes a block inside a zkVM.
 #[derive(Debug, Clone, Default)]
@@ -80,7 +84,10 @@ pub struct LineaVariant;
 
 /// Implementation for Linea-specific execution/validation logic.
 #[derive(Debug)]
-pub struct DevnetVarient;
+pub struct DevnetVariant;
+
+#[derive(Debug)]
+pub struct SepoliaVariant;
 
 /// EVM chain variants that implement different execution/validation rules.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -93,6 +100,8 @@ pub enum ChainVariant {
     Linea,
     /// Devnet network
     Devnet,
+    /// Testnets
+    Sepolia,
 }
 
 impl ChainVariant {
@@ -103,6 +112,7 @@ impl ChainVariant {
             ChainVariant::Optimism => CHAIN_ID_OP_MAINNET,
             ChainVariant::Linea => CHAIN_ID_LINEA_MAINNET,
             ChainVariant::Devnet => CHAIN_ID_DEVNET,
+            ChainVariant::Sepolia => CHAIN_ID_SEPOLIA,
         }
     }
 }
@@ -121,8 +131,10 @@ impl ClientExecutor {
         V: Variant,
     {
         // Initialize the witnessed database with verified storage proofs.
-        let witness_db = input.witness_db()?;
-        let cache_db = CacheDB::new(&witness_db);
+        let wrap_ref = profile!("initialize witness db", {
+            let trie_db = input.witness_db().unwrap();
+            WrapDatabaseRef(trie_db)
+        });
 
         // Execute the block.
         let spec = V::spec();
@@ -131,11 +143,11 @@ impl ClientExecutor {
                 .current_block
                 .clone()
                 .with_recovered_senders()
-                .ok_or(eyre!("failed to recover senders"))
+                .ok_or(ClientError::SignatureRecoveryFailed)
         })?;
         let executor_difficulty = input.current_block.header.difficulty;
         let executor_output = profile!("execute", {
-            V::execute(&executor_block_input, executor_difficulty, cache_db)
+            V::execute(&executor_block_input, executor_difficulty, wrap_ref)
         })?;
 
         // Validate the block post execution.
@@ -171,7 +183,7 @@ impl ClientExecutor {
         });
 
         if state_root != input.current_block.state_root {
-            eyre::bail!("mismatched state root");
+            return Err(ClientError::MismatchedStateRoot.into());
         }
 
         // Derive the block header.
@@ -187,7 +199,7 @@ impl ClientExecutor {
         header.withdrawals_root = input
             .current_block
             .withdrawals
-            .clone()
+            .take()
             .map(|w| proofs::calculate_withdrawals_root(w.into_inner().as_slice()));
         header.logs_bloom = logs_bloom;
         header.requests_root =
@@ -214,12 +226,13 @@ impl Variant for EthereumVariant {
     where
         DB: Database<Error: Into<ProviderError> + Display>,
     {
-        Ok(EthExecutorProvider::new(
+        let execution_output = EthExecutorProvider::new(
             Self::spec().into(),
             CustomEvmConfig::from_variant(ChainVariant::Ethereum),
         )
         .executor(cache_db)
-        .execute((executor_block_input, executor_difficulty).into())?)
+        .execute((executor_block_input, executor_difficulty).into());
+        return Ok(execution_output.unwrap());
     }
 
     fn validate_block_post_execution(
@@ -228,7 +241,7 @@ impl Variant for EthereumVariant {
         receipts: &[Receipt],
         requests: &[Request],
     ) -> eyre::Result<()> {
-        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
+        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests).unwrap())
     }
 }
 
@@ -250,7 +263,7 @@ impl Variant for OptimismVariant {
             CustomEvmConfig::from_variant(ChainVariant::Optimism),
         )
         .executor(cache_db)
-        .execute((executor_block_input, executor_difficulty).into())?)
+        .execute((executor_block_input, executor_difficulty).into()).unwrap())
     }
 
     fn validate_block_post_execution(
@@ -259,7 +272,7 @@ impl Variant for OptimismVariant {
         receipts: &[Receipt],
         _requests: &[Request],
     ) -> eyre::Result<()> {
-        Ok(validate_block_post_execution_optimism(block, chain_spec, receipts)?)
+        Ok(validate_block_post_execution_optimism(block, chain_spec, receipts).unwrap())
     }
 }
 
@@ -281,7 +294,7 @@ impl Variant for LineaVariant {
             CustomEvmConfig::from_variant(ChainVariant::Linea),
         )
         .executor(cache_db)
-        .execute((executor_block_input, executor_difficulty).into())?)
+        .execute((executor_block_input, executor_difficulty).into()).unwrap())
     }
 
     fn validate_block_post_execution(
@@ -290,7 +303,7 @@ impl Variant for LineaVariant {
         receipts: &[Receipt],
         requests: &[Request],
     ) -> eyre::Result<()> {
-        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
+        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests).unwrap())
     }
 
     fn pre_process_block(block: &Block) -> Block {
@@ -313,7 +326,7 @@ impl Variant for LineaVariant {
     }
 }
 
-impl Variant for DevnetVarient {
+impl Variant for DevnetVariant {
     fn spec() -> ChainSpec {
         rsp_primitives::chain_spec::devnet()
     }
@@ -329,6 +342,38 @@ impl Variant for DevnetVarient {
         let returning = EthExecutorProvider::new(
             Self::spec().into(),
             CustomEvmConfig::from_variant(ChainVariant::Devnet),
+        )
+        .executor(cache_db)
+        .execute((executor_block_input, executor_difficulty).into())?;
+        Ok(returning)
+    }
+
+    fn validate_block_post_execution(
+        block: &BlockWithSenders,
+        chain_spec: &ChainSpec,
+        receipts: &[Receipt],
+        requests: &[Request],
+    ) -> eyre::Result<()> {
+        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
+    }
+}
+
+impl Variant for SepoliaVariant {
+    fn spec() -> ChainSpec {
+        rsp_primitives::chain_spec::devnet()
+    }
+
+    fn execute<DB>(
+        executor_block_input: &BlockWithSenders,
+        executor_difficulty: U256,
+        cache_db: DB,
+    ) -> eyre::Result<BlockExecutionOutput<Receipt>>
+    where
+        DB: Database<Error: Into<ProviderError> + Display>,
+    {
+        let returning = EthExecutorProvider::new(
+            Self::spec().into(),
+            CustomEvmConfig::from_variant(ChainVariant::Sepolia),
         )
         .executor(cache_db)
         .execute((executor_block_input, executor_difficulty).into())?;

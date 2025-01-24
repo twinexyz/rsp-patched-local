@@ -22,6 +22,7 @@ rsp-primitives = { workspace = true }
 rsp-mpt = { workspace = true }
 
 # reth
+reth-consensus ={ workspace = true }
 reth-ethereum-consensus = { workspace = true }
 reth-optimism-consensus = { workspace = true }
 reth-execution-types = { workspace = true }
@@ -35,9 +36,12 @@ reth-errors = { workspace = true }
 reth-chainspec = { workspace = true }
 reth-revm = { workspace = true }
 
+
 # revm
 revm = { workspace = true }
 revm-primitives = { workspace = true }
+
+thiserror ={ workspace = true }
 
 # alloy
 alloy-primitives = { workspace = true }

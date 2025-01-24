@@ -1,5 +1,7 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
+use eth_proofs::EthProofsClient;
+use execute::process_execution_report;
 use rsp_client_executor::{
     io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
@@ -16,10 +18,11 @@ use tracing_subscriber::{
 };
 
 mod execute;
-use execute::process_execution_report;
 
 mod cli;
 use cli::ProviderArgs;
+
+mod eth_proofs;
 
 /// The arguments for the host executable.
 #[derive(Debug, Clone, Parser)]
@@ -41,6 +44,18 @@ struct HostArgs {
     /// The path to the CSV file containing the execution data.
     #[clap(long, default_value = "report.csv")]
     report_path: PathBuf,
+
+    /// Optional ETH proofs endpoint.
+    #[clap(long, env, requires("eth_proofs_api_token"))]
+    eth_proofs_endpoint: Option<String>,
+
+    /// Optional ETH proofs API token.
+    #[clap(long, env)]
+    eth_proofs_api_token: Option<String>,
+
+    /// Optional ETH proofs cluster ID.
+    #[clap(long, default_value_t = 1)]
+    eth_proofs_cluster_id: u64,
 }
 
 #[tokio::main]
@@ -57,7 +72,16 @@ async fn main() -> eyre::Result<()> {
 
     // Parse the command line arguments.
     let args = HostArgs::parse();
-    let provider_config = args.provider.into_provider().await?;
+    let provider_config = args.provider.clone().into_provider().await?;
+    let eth_proofs_client = EthProofsClient::new(
+        args.eth_proofs_cluster_id,
+        args.eth_proofs_endpoint,
+        args.eth_proofs_api_token,
+    );
+
+    if let Some(eth_proofs_client) = &eth_proofs_client {
+        eth_proofs_client.queued(args.block_number).await?;
+    }
 
     let variant = match provider_config.chain_id {
         CHAIN_ID_ETH_MAINNET => ChainVariant::Ethereum,
@@ -106,7 +130,7 @@ async fn main() -> eyre::Result<()> {
                 client_input.push(cl_input);
             }
 
-            if let Some(cache_dir) = args.cache_dir {
+            if let Some(ref cache_dir) = args.cache_dir {
                 let input_folder = cache_dir.join(format!("input/{}", provider_config.chain_id));
                 if !input_folder.exists() {
                     std::fs::create_dir_all(&input_folder)?;
@@ -138,6 +162,7 @@ async fn main() -> eyre::Result<()> {
         ChainVariant::Devnet => {
             include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
         }
+        ChainVariant::Sepolia => include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
     });
 
     // Execute the block inside the zkVM.
@@ -153,8 +178,6 @@ async fn main() -> eyre::Result<()> {
     process_execution_report(variant, client_input, execution_report, args.report_path)?;
 
     if args.prove {
-        // Actually generate the proof. It is strongly recommended you use the network prover
-        // given the size of these programs.
         println!("Starting proof generation.");
         println!("vk:: {:?}", vk.bytes32());
         let proof = client.prove(&pk, &stdin).groth16().run().expect("Proving should work.");
