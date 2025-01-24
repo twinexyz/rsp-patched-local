@@ -22,8 +22,8 @@ use revm::precompile::{
     bn128, kzg_point_evaluation, secp256k1, Precompile, PrecompileResult, PrecompileWithAddress,
 };
 use std::sync::Arc;
-use twine_precompiles::precompiles::bridge_transactions::transactions::precompiles as transaction_precompile;
-use twine_precompiles::precompiles::verifier::precompiles as verifier_precompile;
+use twine_reth_evm::precompiles::transaction::transaction_precompile;
+use twine_reth_evm::precompiles::verifier::verifier_precompile;
 
 /// Create an annotated precompile that tracks the cycle count of a precompile.
 /// This is useful for tracking how many cycles in total are consumed by calls to a given

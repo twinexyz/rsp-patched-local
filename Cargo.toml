@@ -118,17 +118,15 @@ revm-inspectors = "0.6"
 revm-interpreter = { version = "=10.0.1", default-features = false }
 revm-precompile = { version = "=11.0.1", default-features = false }
 
-# sp1
 sp1-sdk = "4.0.0"
 sp1-helper = "4.0.0"
-sp1-verifier = {git = "https://github.com/succinctlabs/sp1.git", rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
-
-# local dependencies
-twine_precompiles = {path="../twine/lib"}
+twine-reth-evm = { path = "../twine/crates/reth/evm" }
+sp1-verifier = { git = "https://github.com/succinctlabs/sp1.git", rev = "b8abe3298b92eec38d6f1b7f7e51a1329b272148" }
+ark-groth16 = { git = "https://github.com/arkworks-rs/groth16.git" }
 
 
 [workspace.lints]
 rust = { missing_debug_implementations = "warn", unreachable_pub = "warn", unused_must_use = "deny", rust_2018_idioms = { level = "deny", priority = -1, all = "warn" } }
 
 [patch.crates-io]
-ethereum_hashing = { git = "https://github.com/Atamanov/ethereum_hashing.git"}
+ethereum_hashing = { git = "https://github.com/Atamanov/ethereum_hashing.git" }
