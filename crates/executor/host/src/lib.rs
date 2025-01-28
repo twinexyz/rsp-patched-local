@@ -1,6 +1,10 @@
+mod error;
+pub use error::Error as HostError;
+
+use std::{collections::BTreeSet, fs, marker::PhantomData, path::PathBuf};
+
 use alloy_provider::{network::AnyNetwork, Provider};
 use alloy_transport::Transport;
-use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
@@ -95,17 +99,20 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             block_number,
             current_block.body.len()
         );
-        // TODO: block validation fails from here
-        let executor_block_input = V::pre_process_block(&current_block)
+
+        let executor_block_input = variant
+            .pre_process_block(&current_block)
             .with_recovered_senders()
-            .ok_or(eyre!("failed to recover senders"))?;
+            .ok_or(HostError::FailedToRecoverSenders)?;
+
         let executor_difficulty = current_block.header.difficulty;
-        let executor_output = V::execute(&executor_block_input, executor_difficulty, cache_db)?;
+        let executor_output =
+            variant.execute(&executor_block_input, executor_difficulty, cache_db)?;
+
         // Validate the block post execution.
         tracing::info!("validating the block post execution");
-        V::validate_block_post_execution(
+        variant.validate_block_post_execution(
             &executor_block_input,
-            &spec,
             &executor_output.receipts,
             &executor_output.requests,
         )?;
@@ -181,7 +188,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             mutated_state.state_root()
         };
         if state_root != current_block.state_root {
-            eyre::bail!("mismatched state root");
+            return Err(HostError::StateRootMismatch(state_root, current_block.state_root));
         }
 
         // Derive the block header.
@@ -204,7 +211,12 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
 
         // Assert the derived header is correct.
-        assert_eq!(header.hash_slow(), current_block.header.hash_slow(), "header mismatch");
+        let constructed_header_hash = header.hash_slow();
+        let target_hash = current_block.header.hash_slow();
+        if constructed_header_hash != target_hash {
+            return Err(HostError::HeaderMismatch(constructed_header_hash, target_hash));
+        }
+
         // Log the result.
         tracing::info!(
             "successfully executed block: block_number={}, block_hash={}, state_root={}",
@@ -218,18 +230,29 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let mut ancestor_headers = vec![];
         tracing::info!("fetching {} ancestor headers", block_number - oldest_ancestor);
         for height in (oldest_ancestor..=(block_number - 1)).rev() {
-            let block = self.provider.get_block_by_number(height.into(), false).await?.unwrap();
+            let block = self
+                .provider
+                .get_block_by_number(height.into(), false)
+                .await?
+                .ok_or(HostError::ExpectedBlock(height))?;
+
             ancestor_headers.push(block.inner.header.try_into()?);
         }
 
+        let genesis = if let Some(genesis_path) = genesis_path {
+            Some(fs::read_to_string(genesis_path)?)
+        } else {
+            None
+        };
+
         // Create the client input.
         let client_input = ClientExecutorInput {
-            previous_state_root: previous_block.header.state_root,
-            current_block: V::pre_process_block(&current_block),
+            current_block: variant.pre_process_block(&current_block),
             ancestor_headers,
             parent_state: state,
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
+            genesis,
         };
         tracing::info!("successfully generated client input");
 

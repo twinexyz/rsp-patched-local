@@ -1,25 +1,23 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
+use reth_primitives::B256;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
-    CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
+    io::ClientExecutorInput, ChainVariant, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET,
+    CHAIN_ID_OP_MAINNET,
 };
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{HashableKey, ProverClient, SP1Stdin};
-use std::{
-    fs::{self, File},
-    io::Write,
-    path::PathBuf,
-};
+use sp1_sdk::{ProverClient, SP1Stdin};
+use std::path::PathBuf;
 use tracing_subscriber::{
     filter::EnvFilter, fmt, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
 
 mod execute;
-use execute::process_execution_report;
 
 mod cli;
 use cli::ProviderArgs;
+
+mod eth_proofs;
 
 /// The arguments for the host executable.
 #[derive(Debug, Clone, Parser)]
@@ -27,25 +25,42 @@ struct HostArgs {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
-    #[clap(long)]
-    to_block: Option<u64>,
     #[clap(flatten)]
     provider: ProviderArgs,
+
+    /// The path to the genesis json file to use for the execution.
+    #[clap(long)]
+    genesis_path: Option<PathBuf>,
+
     /// Whether to generate a proof or just execute the block.
     #[clap(long)]
     prove: bool,
+
     /// Optional path to the directory containing cached client input. A new cache file will be
     /// created from RPC data if it doesn't already exist.
     #[clap(long)]
     cache_dir: Option<PathBuf>,
+
     /// The path to the CSV file containing the execution data.
     #[clap(long, default_value = "report.csv")]
     report_path: PathBuf,
+
+    /// Optional ETH proofs endpoint.
+    #[clap(long, env, requires("eth_proofs_api_token"))]
+    eth_proofs_endpoint: Option<String>,
+
+    /// Optional ETH proofs API token.
+    #[clap(long, env)]
+    eth_proofs_api_token: Option<String>,
+
+    /// Optional ETH proofs cluster ID.
+    #[clap(long, default_value_t = 1)]
+    eth_proofs_cluster_id: u64,
 }
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    // Intialize the environment variables.
+    // Initialize the environment variables.
     dotenv::dotenv().ok();
 
     if std::env::var("RUST_LOG").is_err() {
@@ -63,11 +78,14 @@ async fn main() -> eyre::Result<()> {
         CHAIN_ID_ETH_MAINNET => ChainVariant::Ethereum,
         CHAIN_ID_OP_MAINNET => ChainVariant::Optimism,
         CHAIN_ID_LINEA_MAINNET => ChainVariant::Linea,
-        CHAIN_ID_DEVNET => ChainVariant::Devnet,
         _ => {
             eyre::bail!("unknown chain ID: {}", provider_config.chain_id);
         }
     };
+
+    if args.genesis_path.is_some() && variant.chain_id() != provider_config.chain_id {
+        eyre::bail!("The chain ID in the genesis file does not match the provided RPC");
+    }
 
     let client_input_from_cache = try_load_input_from_cache(
         args.cache_dir.as_ref(),
@@ -87,26 +105,12 @@ async fn main() -> eyre::Result<()> {
             // Setup the host executor.
             let host_executor = HostExecutor::new(provider);
             // Execute the host.
-            let mut client_input = Vec::new();
-            let to_block = match args.to_block {
-                Some(to_block) => to_block,
-                None => args.block_number,
-            };
-
-            let blocks = host_executor
-                .get_desired_blocks(args.block_number, to_block)
+            let client_input = host_executor
+                .execute(args.block_number, variant)
                 .await
-                .expect("failed to get desired blocks from RPC");
+                .expect("failed to execute host");
 
-            for i in 0..blocks.len() - 1 {
-                let cl_input = host_executor
-                    .execute(blocks[i].clone(), blocks[i + 1].clone(), variant)
-                    .await
-                    .expect("failed to execute host");
-                client_input.push(cl_input);
-            }
-
-            if let Some(cache_dir) = args.cache_dir {
+            if let Some(ref cache_dir) = args.cache_dir {
                 let input_folder = cache_dir.join(format!("input/{}", provider_config.chain_id));
                 if !input_folder.exists() {
                     std::fs::create_dir_all(&input_folder)?;
@@ -135,9 +139,6 @@ async fn main() -> eyre::Result<()> {
         }
         ChainVariant::Optimism => include_bytes!("../../client-op/elf/riscv32im-succinct-zkvm-elf"),
         ChainVariant::Linea => include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf"),
-        ChainVariant::Devnet => {
-            include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
-        }
     });
 
     // Execute the block inside the zkVM.
@@ -146,32 +147,28 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (_, execution_report) = client.execute(&pk.elf, &stdin).run().unwrap();
+    let (mut public_values, execution_report) =
+        client.execute(&pk.elf, stdin.clone()).run().unwrap();
 
-    // Process the execute report, print it out, and save data to a CSV specified by
-    // report_path.
-    process_execution_report(variant, client_input, execution_report, args.report_path)?;
+    // Read the block hash.
+    let block_hash = public_values.read::<B256>();
+    println!("success: block_hash={block_hash}");
+
+    if eth_proofs_client.is_none() {
+        // Process the execute report, print it out, and save data to a CSV specified by
+        // report_path.
+        process_execution_report(
+            variant,
+            client_input,
+            &execution_report,
+            args.report_path.clone(),
+        )?;
+    }
 
     if args.prove {
-        // Actually generate the proof. It is strongly recommended you use the network prover
-        // given the size of these programs.
         println!("Starting proof generation.");
-        println!("vk:: {:?}", vk.bytes32());
-        let proof = client.prove(&pk, &stdin).groth16().run().expect("Proving should work.");
+        let proof = client.prove(&pk, stdin).compressed().run().expect("Proving should work.");
         println!("Proof generation finished.");
-
-        let proof_dir = "proofs";
-        if let Ok(exists) = fs::exists(proof_dir) {
-            if !exists {
-                fs::create_dir(proof_dir).unwrap();
-            }
-        }
-
-        let proof_json = serde_json::to_string(&proof).unwrap();
-        let file_name =
-            format!("{}/execution_proof_{}_{}.proof", proof_dir, args.block_number, to_block);
-        let mut proof_file = File::create(&file_name).unwrap();
-        proof_file.write_all(proof_json.as_bytes()).unwrap();
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
     }

@@ -1,7 +1,7 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use rsp_client_executor::{io::ClientExecutorInput, ClientExecutor, OptimismVariant};
+use rsp_client_executor::{io::ClientExecutorInput, ChainVariant, ClientExecutor};
 
 pub fn main() {
     // Read the input.
@@ -10,8 +10,9 @@ pub fn main() {
 
     // Execute the block.
     let executor = ClientExecutor;
-    let executor_output = executor.execute::<OptimismVariant>(input).expect("failed to execute client");
-    let block_hash = executor_output.block.hash_slow();
+    let header =
+        executor.execute(input, &ChainVariant::op_mainnet()).expect("failed to execute client");
+    let block_hash = header.hash_slow();
 
     // Commit the block hash.
     sp1_zkvm::io::commit(&block_hash);
