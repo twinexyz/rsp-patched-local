@@ -160,6 +160,9 @@ impl ChainVariant {
             CHAIN_ID_LINEA_MAINNET => {
                 Ok(Self::Linea(LineaVariant::new(rsp_primitives::chain_spec::linea_mainnet())))
             }
+            CHAIN_ID_DEVNET => {
+                Ok(Self::Ethereum(EthereumVariant::new(rsp_primitives::chain_spec::devnet())))
+            }
             _ => Err(ClientError::UnknownChainId(chain_id)),
         }
     }
