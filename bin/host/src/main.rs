@@ -6,7 +6,7 @@ use rsp_client_executor::{
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
 };
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{ProverClient, SP1Stdin};
+use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
 use std::{
     fs::{self, File},
     io::Write,
@@ -159,18 +159,10 @@ async fn main() -> eyre::Result<()> {
 
     // Setup the proving key and verification key.
     let (pk, vk) = client.setup(match variant {
-        ChainVariant::Ethereum(_) => {
-            include_bytes!("../../client-eth/elf/riscv32im-succinct-zkvm-elf")
-        }
-        ChainVariant::Optimism(_) => {
-            include_bytes!("../../client-op/elf/riscv32im-succinct-zkvm-elf")
-        }
-        ChainVariant::Linea(_) => {
-            include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf")
-        }
-        ChainVariant::Devnet(_) => {
-            include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
-        }
+        ChainVariant::Ethereum(_) => include_elf!("rsp-client-eth"),
+        ChainVariant::Optimism(_) => include_elf!("rsp-client-op"),
+        ChainVariant::Linea(_) => include_elf!("rsp-client-linea"),
+        ChainVariant::Devnet(_) => include_elf!("rsp-client-local")
     });
 
     // Execute the block inside the zkVM.

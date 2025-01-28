@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use base64::{engine::general_purpose::STANDARD, Engine};
 use sp1_sdk::{ExecutionReport, HashableKey, SP1VerifyingKey};
 

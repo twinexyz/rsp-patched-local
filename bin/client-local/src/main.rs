@@ -32,8 +32,7 @@ pub fn main() {
         };
         let mut public_commitment = public_commitment.abi_encode_packed();
         pub_commitment_slice.append(&mut public_commitment);
-    }).collect();
-    
+    }).collect();   
 
     let public_commitment = PublicCommitment {
         from_block,
