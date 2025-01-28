@@ -6,7 +6,7 @@ use rsp_client_executor::{
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
 };
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{include_elf, Prover, ProverClient, SP1Stdin};
+use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
 use std::{
     fs::{self, File},
     io::Write,

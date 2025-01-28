@@ -92,6 +92,7 @@ impl<'a> TrieDB<'a> {
     }
 }
 
+#[allow(clippy::needless_lifetimes)]
 impl<'a> DatabaseRef for TrieDB<'a> {
     /// The database error type.
     type Error = ProviderError;
