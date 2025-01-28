@@ -1,13 +1,17 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use reth_primitives::B256;
+use execute::process_execution_report;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET,
-    CHAIN_ID_OP_MAINNET,
+    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
+    CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
 };
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{ProverClient, SP1Stdin};
-use std::path::PathBuf;
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+};
 use tracing_subscriber::{
     filter::EnvFilter, fmt, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt,
 };
@@ -25,6 +29,8 @@ struct HostArgs {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
+    #[clap(long)]
+    to_block: Option<u64>,
     #[clap(flatten)]
     provider: ProviderArgs,
 
@@ -74,13 +80,18 @@ async fn main() -> eyre::Result<()> {
     let args = HostArgs::parse();
     let provider_config = args.provider.into_provider().await?;
 
-    let variant = match provider_config.chain_id {
-        CHAIN_ID_ETH_MAINNET => ChainVariant::Ethereum,
-        CHAIN_ID_OP_MAINNET => ChainVariant::Optimism,
-        CHAIN_ID_LINEA_MAINNET => ChainVariant::Linea,
-        _ => {
-            eyre::bail!("unknown chain ID: {}", provider_config.chain_id);
-        }
+    let variant = match &args.genesis_path {
+        Some(genesis_path) => ChainVariant::from_genesis_path(genesis_path)?,
+        None => match provider_config.chain_id {
+            CHAIN_ID_ETH_MAINNET => ChainVariant::mainnet(),
+            CHAIN_ID_OP_MAINNET => ChainVariant::op_mainnet(),
+            CHAIN_ID_LINEA_MAINNET => ChainVariant::linea_mainnet(),
+            CHAIN_ID_SEPOLIA => ChainVariant::sepolia(),
+            CHAIN_ID_DEVNET => ChainVariant::devnet(),
+            _ => {
+                eyre::bail!("Unknown chain ID: {}", provider_config.chain_id);
+            }
+        },
     };
 
     if args.genesis_path.is_some() && variant.chain_id() != provider_config.chain_id {
@@ -104,11 +115,25 @@ async fn main() -> eyre::Result<()> {
 
             // Setup the host executor.
             let host_executor = HostExecutor::new(provider);
-            // Execute the host.
-            let client_input = host_executor
-                .execute(args.block_number, variant)
+
+            let mut client_input = Vec::new();
+            let to_block = match args.to_block {
+                Some(to_block) => to_block,
+                None => args.block_number,
+            };
+
+            let blocks = host_executor
+                .get_desired_blocks(args.block_number, to_block)
                 .await
-                .expect("failed to execute host");
+                .expect("failed to get desired blocks from RPC");
+
+            for i in 0..blocks.len() - 1 {
+                let cl_input = host_executor
+                    .execute(blocks[i].clone(), blocks[i + 1].clone(), variant.clone())
+                    .await
+                    .expect("failed to execute host");
+                client_input.push(cl_input);
+            }
 
             if let Some(ref cache_dir) = args.cache_dir {
                 let input_folder = cache_dir.join(format!("input/{}", provider_config.chain_id));
@@ -134,11 +159,18 @@ async fn main() -> eyre::Result<()> {
 
     // Setup the proving key and verification key.
     let (pk, vk) = client.setup(match variant {
-        ChainVariant::Ethereum => {
+        ChainVariant::Ethereum(_) => {
             include_bytes!("../../client-eth/elf/riscv32im-succinct-zkvm-elf")
         }
-        ChainVariant::Optimism => include_bytes!("../../client-op/elf/riscv32im-succinct-zkvm-elf"),
-        ChainVariant::Linea => include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf"),
+        ChainVariant::Optimism(_) => {
+            include_bytes!("../../client-op/elf/riscv32im-succinct-zkvm-elf")
+        }
+        ChainVariant::Linea(_) => {
+            include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf")
+        }
+        ChainVariant::Devnet(_) => {
+            include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
+        }
     });
 
     // Execute the block inside the zkVM.
@@ -147,28 +179,25 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (mut public_values, execution_report) =
-        client.execute(&pk.elf, stdin.clone()).run().unwrap();
+    let (_, execution_report) = client.execute(&pk.elf, &stdin).run().unwrap();
 
-    // Read the block hash.
-    let block_hash = public_values.read::<B256>();
-    println!("success: block_hash={block_hash}");
-
-    if eth_proofs_client.is_none() {
-        // Process the execute report, print it out, and save data to a CSV specified by
-        // report_path.
-        process_execution_report(
-            variant,
-            client_input,
-            &execution_report,
-            args.report_path.clone(),
-        )?;
-    }
+    process_execution_report(variant, client_input, execution_report, args.report_path.clone())?;
 
     if args.prove {
         println!("Starting proof generation.");
-        let proof = client.prove(&pk, stdin).compressed().run().expect("Proving should work.");
-        println!("Proof generation finished.");
+        let proof = client.prove(&pk, &stdin).groth16().run().expect("Proving should work.");
+        let proof_dir = "proofs";
+        if let Ok(exists) = fs::exists(proof_dir) {
+            if !exists {
+                fs::create_dir(proof_dir).unwrap();
+            }
+        }
+
+        let proof_json = serde_json::to_string(&proof).unwrap();
+        let file_name =
+            format!("{}/execution_proof_{}_{}.proof", proof_dir, args.block_number, to_block);
+        let mut proof_file = File::create(&file_name).unwrap();
+        proof_file.write_all(proof_json.as_bytes()).unwrap();
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
     }

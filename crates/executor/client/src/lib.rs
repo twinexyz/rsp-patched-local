@@ -23,10 +23,11 @@ use reth_evm_optimism::OpExecutorProvider;
 use reth_execution_types::ExecutionOutcome;
 use reth_optimism_consensus::validate_block_post_execution as validate_block_post_execution_optimism;
 use reth_primitives::{
-    proofs, Block, BlockWithSenders, Bloom, Genesis, Header, Receipt, Receipts, Request,
+    proofs, Block, BlockWithSenders, Bloom, Genesis, Receipt, Receipts, Request,
 };
 use revm::{db::WrapDatabaseRef, Database};
-use revm_primitives::{address, U256};
+use revm_primitives::{address, FixedBytes, U256};
+use serde::{Deserialize, Serialize};
 
 /// Chain ID for Ethereum Mainnet.
 pub const CHAIN_ID_ETH_MAINNET: u64 = 0x1;
@@ -115,8 +116,22 @@ impl LineaVariant {
 }
 
 /// Implementation for Linea-specific execution/validation logic.
-#[derive(Debug)]
-pub struct DevnetVarient;
+#[derive(Debug, Clone)]
+pub struct DevnetVarient {
+    spec: ChainSpec,
+}
+
+impl DevnetVarient {
+    /// Creates a new Ethereum variant.
+    pub fn new(spec: ChainSpec) -> Self {
+        Self { spec }
+    }
+
+    /// Creates a new Ethereum variant, using the given genesis.
+    pub fn from_genesis(genesis: Genesis) -> Self {
+        Self { spec: genesis.into() }
+    }
+}
 
 /// EVM chain variants that implement different execution/validation rules.
 #[derive(Debug, Clone)]
@@ -177,12 +192,17 @@ impl ChainVariant {
         Self::from_chain_id(CHAIN_ID_SEPOLIA).unwrap()
     }
 
+    pub fn devnet() -> Self {
+        Self::from_chain_id(CHAIN_ID_DEVNET).unwrap()
+    }
+
     /// Returns the chain ID for the given variant.
     pub fn chain_id(&self) -> u64 {
         match self {
             ChainVariant::Ethereum(v) => v.spec.genesis.config.chain_id,
             ChainVariant::Optimism(v) => v.spec.genesis.config.chain_id,
             ChainVariant::Linea(v) => v.spec.genesis.config.chain_id,
+            ChainVariant::Devnet(v) => v.spec.genesis.config.chain_id,
         }
     }
 
@@ -191,6 +211,7 @@ impl ChainVariant {
             ChainVariant::Ethereum(v) => v.spec.genesis.clone(),
             ChainVariant::Optimism(v) => v.spec.genesis.clone(),
             ChainVariant::Linea(v) => v.spec.genesis.clone(),
+            ChainVariant::Devnet(v) => v.spec.genesis.clone(),
         }
     }
 }
@@ -215,6 +236,9 @@ impl Variant for ChainVariant {
             ChainVariant::Linea(v) => {
                 v.execute(executor_block_input, executor_difficulty, cache_db)
             }
+            ChainVariant::Devnet(v) => {
+                v.execute(executor_block_input, executor_difficulty, cache_db)
+            }
         }
     }
 
@@ -228,6 +252,7 @@ impl Variant for ChainVariant {
             ChainVariant::Ethereum(v) => v.validate_block_post_execution(block, receipts, requests),
             ChainVariant::Optimism(v) => v.validate_block_post_execution(block, receipts, requests),
             ChainVariant::Linea(v) => v.validate_block_post_execution(block, receipts, requests),
+            ChainVariant::Devnet(v) => v.validate_block_post_execution(block, receipts, requests),
         }
     }
 
@@ -236,6 +261,7 @@ impl Variant for ChainVariant {
             ChainVariant::Ethereum(v) => v.pre_process_block(block),
             ChainVariant::Optimism(v) => v.pre_process_block(block),
             ChainVariant::Linea(v) => v.pre_process_block(block),
+            ChainVariant::Devnet(v) => v.pre_process_block(block),
         }
     }
 }
@@ -253,7 +279,7 @@ impl ClientExecutor {
         &self,
         mut input: ClientExecutorInput,
         variant: &ChainVariant,
-    ) -> Result<Header, ClientError> {
+    ) -> Result<Block, ClientError> {
         // Initialize the witnessed database with verified storage proofs.
         let wrap_ref = profile!("initialize witness db", {
             let trie_db = input.witness_db().unwrap();
@@ -331,7 +357,7 @@ impl ClientExecutor {
 
         // filter withdrawal transaction
 
-        Ok(ExecutorOutput { block })
+        Ok(block)
     }
 }
 
@@ -450,35 +476,43 @@ impl Variant for LineaVariant {
     }
 }
 
-impl Variant for DevnetVarient {
-    fn spec() -> ChainSpec {
-        rsp_primitives::chain_spec::devnet()
+impl From<LineaVariant> for ChainVariant {
+    fn from(v: LineaVariant) -> Self {
+        Self::Linea(v)
     }
+}
 
+impl Variant for DevnetVarient {
     fn execute<DB>(
+        &self,
         executor_block_input: &BlockWithSenders,
         executor_difficulty: U256,
         cache_db: DB,
-    ) -> eyre::Result<BlockExecutionOutput<Receipt>>
+    ) -> Result<BlockExecutionOutput<Receipt>, BlockExecutionError>
     where
         DB: Database<Error: Into<ProviderError> + Display>,
     {
-        let returning = EthExecutorProvider::new(
-            Self::spec().into(),
-            CustomEvmConfig::from_variant(ChainVariant::Devnet),
+        EthExecutorProvider::new(
+            self.spec.clone().into(),
+            CustomEvmConfig::from_variant(self.clone().into()),
         )
         .executor(cache_db)
-        .execute((executor_block_input, executor_difficulty).into())?;
-        Ok(returning)
+        .execute((executor_block_input, executor_difficulty).into())
     }
 
     fn validate_block_post_execution(
+        &self,
         block: &BlockWithSenders,
-        chain_spec: &ChainSpec,
         receipts: &[Receipt],
         requests: &[Request],
-    ) -> eyre::Result<()> {
-        Ok(validate_block_post_execution_ethereum(block, chain_spec, receipts, requests)?)
+    ) -> Result<(), ConsensusError> {
+        validate_block_post_execution_ethereum(block, &self.spec, receipts, requests)
+    }
+}
+
+impl From<DevnetVarient> for ChainVariant {
+    fn from(v: DevnetVarient) -> Self {
+        Self::Devnet(v)
     }
 }
 

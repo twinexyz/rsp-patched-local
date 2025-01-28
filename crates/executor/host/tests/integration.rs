@@ -44,7 +44,7 @@ async fn run_e2e(
 ) {
     // Intialize the environment variables.
     dotenv::dotenv().ok();
-
+    _ = genesis_path;
     // Initialize the logger.
     let _ = tracing_subscriber::registry()
         .with(fmt::layer())
@@ -66,7 +66,7 @@ async fn run_e2e(
 
     // Execute the host.
     let client_input = host_executor
-        .execute(block_number, &variant, genesis_path)
+        .execute(blocks.first().unwrap().clone(), blocks.first().unwrap().clone(), variant.clone())
         .await
         .expect("failed to execute host");
 

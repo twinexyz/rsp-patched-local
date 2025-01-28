@@ -1,5 +1,6 @@
 mod error;
 pub use error::Error as HostError;
+use eyre::eyre;
 
 use std::{collections::BTreeSet, fs, marker::PhantomData, path::PathBuf};
 
@@ -8,14 +9,10 @@ use alloy_transport::Transport;
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
-use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
-    OptimismVariant, Variant,
-};
+use rsp_client_executor::{io::ClientExecutorInput, ChainVariant, Variant};
 use rsp_mpt::EthereumState;
 use rsp_primitives::account_proof::eip1186_proof_to_account_proof;
 use rsp_rpc_db::RpcDb;
-use std::{collections::BTreeSet, marker::PhantomData};
 
 /// An executor that fetches data from a [Provider] to execute blocks in the [ClientExecutor].
 #[derive(Debug, Clone)]
@@ -40,17 +37,17 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         variant: ChainVariant,
     ) -> eyre::Result<ClientExecutorInput> {
         let client_input = match variant {
-            ChainVariant::Ethereum => {
-                self.execute_variant::<EthereumVariant>(previous_block, current_block).await
+            ChainVariant::Ethereum(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
             }
-            ChainVariant::Optimism => {
-                self.execute_variant::<OptimismVariant>(previous_block, current_block).await
+            ChainVariant::Optimism(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
             }
-            ChainVariant::Linea => {
-                self.execute_variant::<LineaVariant>(previous_block, current_block).await
+            ChainVariant::Linea(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
             }
-            ChainVariant::Devnet => {
-                self.execute_variant::<DevnetVarient>(previous_block, current_block).await
+            ChainVariant::Devnet(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
             }
         }?;
 
@@ -75,19 +72,15 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         Ok(blocks)
     }
 
-    async fn execute_variant<V>(
+    async fn execute_variant(
         &self,
+        variant: &ChainVariant,
         previous_block: Block,
         current_block: Block,
-    ) -> eyre::Result<ClientExecutorInput>
-    where
-        V: Variant,
-    {
+        genesis_path: Option<PathBuf>,
+    ) -> Result<ClientExecutorInput, HostError> {
         // Fetch the current block and the previous block from the provider.
         let block_number = current_block.header.number;
-
-        // Setup the spec for the block executor.
-        let spec = V::spec();
 
         // Setup the database for the block executor.
         let rpc_db = RpcDb::new(self.provider.clone(), block_number - 1);
@@ -247,6 +240,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
 
         // Create the client input.
         let client_input = ClientExecutorInput {
+            previous_state_root: previous_block.header.state_root,
             current_block: variant.pre_process_block(&current_block),
             ancestor_headers,
             parent_state: state,

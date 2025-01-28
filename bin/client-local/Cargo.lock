@@ -4750,6 +4750,7 @@ dependencies = [
  "futures",
  "itertools 0.13.0",
  "reth-chainspec 1.0.6 (git+https://github.com/parajuliswopnil/sp1-reth.git?branch=rsp-20250124)",
+ "reth-consensus",
  "reth-errors",
  "reth-ethereum-consensus",
  "reth-evm",
@@ -4769,6 +4770,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sp1-verifier 3.0.0 (git+https://github.com/succinctlabs/sp1.git?rev=b8abe3298b92eec38d6f1b7f7e51a1329b272148)",
+ "thiserror 1.0.68",
  "tokio",
  "twine-reth-evm",
  "url",
@@ -4791,8 +4793,6 @@ dependencies = [
  "alloy-primitives 0.8.15",
  "alloy-rlp",
  "alloy-rpc-types 0.3.6",
- "anyhow",
- "eyre",
  "itertools 0.13.0",
  "reth-execution-types",
  "reth-primitives 1.0.6 (git+https://github.com/parajuliswopnil/sp1-reth.git?branch=rsp-20250124)",
@@ -4810,7 +4810,6 @@ name = "rsp-primitives"
 version = "0.1.0"
 dependencies = [
  "alloy-rpc-types 0.3.6",
- "eyre",
  "reth-chainspec 1.0.6 (git+https://github.com/parajuliswopnil/sp1-reth.git?branch=rsp-20250124)",
  "reth-optimism-chainspec 1.0.6 (git+https://github.com/parajuliswopnil/sp1-reth.git?branch=rsp-20250124)",
  "reth-primitives 1.0.6 (git+https://github.com/parajuliswopnil/sp1-reth.git?branch=rsp-20250124)",
