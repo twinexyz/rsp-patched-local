@@ -9,17 +9,15 @@ use rsp_client_executor::{io::ClientExecutorInput, BlockInfo, ChainVariant, Clie
 pub fn main() {
     // Read the input.
     let input = sp1_zkvm::io::read_vec();
-    let input = bincode::deserialize::<ClientExecutorInput>(&input).unwrap();
+    let input = bincode::deserialize::<Vec<ClientExecutorInput>>(&input).unwrap();
 
     // Execute the block.
     let executor = ClientExecutor;
-    // let mut executor_outputs = Vec::new();
-    // for i in input {
-    //     let output = executor.execute(i, &ChainVariant::devnet()).expect("failed to execute client");
-    //     executor_outputs.push(output);
-    // }
-
-    let output = executor.execute(input, &ChainVariant::devnet()).expect("failed to execute client");
+    let mut executor_outputs = Vec::new();
+    for i in input {
+        let output = executor.execute(i, &ChainVariant::devnet()).expect("failed to execute client");
+        executor_outputs.push(output);
+    }
 
     // let mut pub_commitment_slice = Vec::new();
     // let from_block = executor_outputs.first().expect("empty output").number;
