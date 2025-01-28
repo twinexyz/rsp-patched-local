@@ -6,7 +6,7 @@ use rsp_client_executor::{
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
 };
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{ProverClient, SP1Stdin};
+use sp1_sdk::{Prover, ProverClient, SP1Stdin};
 use std::{
     fs::{self, File},
     io::Write,
@@ -169,13 +169,14 @@ async fn main() -> eyre::Result<()> {
             include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf")
         }
         ChainVariant::Devnet(_) => {
-            include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
+            println!("should reach in devnet");
+             include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
         }
     });
 
     // Execute the block inside the zkVM.
     let mut stdin = SP1Stdin::new();
-    let buffer = bincode::serialize(&client_input).unwrap();
+    let buffer = bincode::serialize(&client_input[0]).unwrap();
     stdin.write_vec(buffer);
 
     // Only execute the program.
