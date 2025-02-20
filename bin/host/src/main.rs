@@ -2,7 +2,7 @@ use alloy_provider::ReqwestProvider;
 use clap::Parser;
 use execute::process_execution_report;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
+    io::ClientExecutorInput, ChainVariant, PublicCommitment, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
 };
 use rsp_host_executor::HostExecutor;
@@ -162,7 +162,7 @@ async fn main() -> eyre::Result<()> {
         ChainVariant::Ethereum(_) => include_elf!("rsp-client-eth"),
         ChainVariant::Optimism(_) => include_elf!("rsp-client-op"),
         ChainVariant::Linea(_) => include_elf!("rsp-client-linea"),
-        ChainVariant::Devnet(_) => include_elf!("rsp-client-local")
+        ChainVariant::Devnet(_) => include_elf!("rsp-client-local"),
     });
 
     // Execute the block inside the zkVM.
@@ -171,30 +171,40 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (_, execution_report) = client.execute(&pk.elf, &stdin).run().unwrap();
+    let (output, execution_report) = client.execute(&pk.elf, &stdin).run().unwrap();
 
     process_execution_report(variant, client_input, execution_report, args.report_path.clone())?;
+
+    let proof_dir = "proofs";
+    if let Ok(exists) = fs::exists(proof_dir) {
+        if !exists {
+            fs::create_dir(proof_dir).unwrap();
+        }
+    }
 
     if args.prove {
         println!("Starting proof generation.");
         let proof = client.prove(&pk, &stdin).groth16().run().expect("Proving should work.");
-        let proof_dir = "proofs";
-        if let Ok(exists) = fs::exists(proof_dir) {
-            if !exists {
-                fs::create_dir(proof_dir).unwrap();
-            }
-        }
 
-        let proof_json = serde_json::to_string(&proof).unwrap();
-        let file_name =
-            format!("{}/execution_proof_{}_{}.proof", proof_dir, args.block_number, to_block);
-        let mut proof_file = File::create(&file_name).unwrap();
-        proof_file.write_all(proof_json.as_bytes()).unwrap();
+        let proof_json = serde_json::to_string(&proof).expect("could not serialized the proof");
+        save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
+    } else {
+        let public_value: PublicCommitment = PublicCommitment::abi_decode_packed(output.to_vec())
+            .expect("could not decode the public commitment");
+        let proof_json =
+            serde_json::to_string(&public_value).expect("couldnot serialize the proof");
+        save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
     }
 
     Ok(())
+}
+
+fn save_proof_to_file(proof_json: String, proof_dir: String, start_block: u64, end_block: u64) {
+    let file_name = format!("{}/execution_proof_{}_{}.proof", proof_dir, start_block, end_block);
+    let mut proof_file = File::create(&file_name).expect("file creation error");
+    proof_file.write_all(proof_json.as_bytes()).expect("error writing proof to the file");
 }
 
 fn try_load_input_from_cache(
