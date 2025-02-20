@@ -10,6 +10,14 @@ A minimal implementation of generating zero-knowledge proofs of EVM block execut
 
 To use RSP, you must first have [Rust](https://www.rust-lang.org/tools/install) installed and [SP1](https://docs.succinct.xyz/docs/getting-started/install) installed to build the client programs. Then follow the instructions below.
 
+Configure path dependencies 
+In the same level as the project, 
+```sh 
+git clone git@github.com:twinexyz/twine.git
+cd twine
+git checkout develop
+```
+
 ### Installing the CLI
 
 In the root directory of this repository, run:
