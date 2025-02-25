@@ -2,7 +2,7 @@ use alloy_provider::ReqwestProvider;
 use clap::Parser;
 use execute::process_execution_report;
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, PublicCommitment, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
+    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
     CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
 };
 use rsp_host_executor::HostExecutor;
@@ -191,8 +191,7 @@ async fn main() -> eyre::Result<()> {
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
     } else {
-        let public_value: PublicCommitment = PublicCommitment::abi_decode_packed(output.to_vec())
-            .expect("could not decode the public commitment");
+        let public_value: String = hex::encode(output.to_vec());
         let proof_json =
             serde_json::to_string(&public_value).expect("couldnot serialize the proof");
         save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
