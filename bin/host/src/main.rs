@@ -191,7 +191,7 @@ async fn main() -> eyre::Result<()> {
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
     } else {
-        let public_value: String = hex::encode(output.to_vec());
+        let public_value: String = output.raw();
         let proof_json =
             serde_json::to_string(&public_value).expect("couldnot serialize the proof");
         save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
