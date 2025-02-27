@@ -38,9 +38,13 @@ struct HostArgs {
     #[clap(long)]
     genesis_path: Option<PathBuf>,
 
-    /// Whether to generate a proof or just execute the block.
+    /// generate a proof 
     #[clap(long)]
     prove: bool,
+
+    /// generate a dummy proof by just executing the program 
+    #[clap(long)]
+    execute: bool,
 
     /// Optional path to the directory containing cached client input. A new cache file will be
     /// created from RPC data if it doesn't already exist.
@@ -190,11 +194,13 @@ async fn main() -> eyre::Result<()> {
         save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
-    } else {
+    } else if args.execute {
         let public_value: String = output.raw();
         let proof_json =
             serde_json::to_string(&public_value).expect("couldnot serialize the proof");
         save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
+    } else {
+        panic!("should run in proving or executing mode");
     }
 
     Ok(())
