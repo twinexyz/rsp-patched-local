@@ -195,11 +195,11 @@ pub trait WitnessInput {
             }
 
             let parent_header_hash = parent_header.hash_slow();
-            if parent_header_hash != child_header.parent_hash {
-                return Err(ClientError::InvalidHeaderParentHash(
-                    parent_header_hash,
-                    child_header.parent_hash,
-                ));
+            if parent_header_hash != child_header.parent_hash && parent_header.number != 0 {
+                    return Err(ClientError::InvalidHeaderParentHash(
+                        parent_header_hash,
+                        child_header.parent_hash,
+                    )); 
             }
 
             block_hashes.insert(parent_header.number, child_header.parent_hash);
