@@ -26,7 +26,7 @@ pub fn main() {
     () = executor_outputs.iter().map(|output| {
         let public_commitment = BlockInfo {
             previous_block: FixedBytes::from_slice(&output.parent_hash.0),
-            block_hash: FixedBytes::from_slice(&output.hash_slow().0),
+            block_hash: FixedBytes::from_slice(&output.header.hash_slow().0),
             transaction_root: FixedBytes::from_slice(&output.transactions_root.0),
             receipt_root: FixedBytes::from_slice(&output.receipts_root.0),
         };

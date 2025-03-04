@@ -1,9 +1,11 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
 use execute::process_execution_report;
+#[allow(unused_imports)]
+use reth_primitives::{hex::FromHex, keccak256, revm_primitives::FixedBytes};
+#[allow(unused_imports)]
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
-    CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
+    io::ClientExecutorInput, BlockInfo, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA
 };
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
@@ -232,4 +234,30 @@ fn try_load_input_from_cache(
     } else {
         None
     })
+}
+
+#[test]
+fn test_commitment() {
+    let block_info = BlockInfo {
+            previous_block: FixedBytes::<32>::from_hex("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
+            block_hash: FixedBytes::<32>::from_hex("0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8").unwrap(),
+            transaction_root:  FixedBytes::<32>::from_hex("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421").unwrap(),
+            receipt_root: FixedBytes::<32>::from_hex("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421").unwrap()
+    };
+
+    let block_info2 = BlockInfo {
+        previous_block: FixedBytes::<32>::from_hex("0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8").unwrap(),
+        block_hash: FixedBytes::<32>::from_hex("0xa186e4eae5c8c4bb6dbbab6076ee2782947b5f62028c1a6bfa9a132a18a999dc").unwrap(),
+        transaction_root:  FixedBytes::<32>::from_hex("0x231e5f5a97d16bb5682c4736617ebded746b769b6dc0e53c022721f556694424").unwrap(),
+        receipt_root: FixedBytes::<32>::from_hex("0xf085d7c94cab8d416d39684d6b361b4ec1749f50daa60cf42c3585faec4fe3f6").unwrap()
+    };
+
+    let mut commitment = block_info.abi_encode_packed();
+    commitment.append(&mut block_info2.abi_encode_packed());
+
+    println!("commitment {}", hex::encode(commitment.clone()));
+
+    let commithash = keccak256(commitment);
+
+    println!("commitment {}", hex::encode(commithash));
 }
