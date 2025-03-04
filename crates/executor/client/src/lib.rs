@@ -337,6 +337,8 @@ impl ClientExecutor {
             return Err(ClientError::MismatchedStateRoot);
         }
 
+        let target_hash = input.current_block.header.hash_slow();
+
         // Derive the block header.
         //
         // Note: the receipts root and gas used are verified by `validate_block_post_execution`.
@@ -356,10 +358,12 @@ impl ClientExecutor {
         header.requests_root =
             input.current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
 
-        block.header = header;
+        block.header = header.clone();
 
         // filter withdrawal transaction
 
+        let calculated_hash = header.hash_slow();
+        assert_eq!(target_hash, calculated_hash, "header hash mismatch");
         Ok(block)
     }
 }
