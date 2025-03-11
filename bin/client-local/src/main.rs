@@ -1,39 +1,44 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use rsp_client_executor::{io::ClientExecutorInput, ClientExecutor, DevnetVarient};
-use revm_primitives::FixedBytes;
+use revm_primitives::{keccak256, FixedBytes};
+use rsp_client_executor::{io::ClientExecutorInput, BlockInfo, ChainVariant, ClientExecutor, PublicCommitment};
+// use revm_primitives::FixedBytes;
 
 
 pub fn main() {
     // Read the input.
     let input = sp1_zkvm::io::read_vec();
-    let input = bincode::deserialize::<ClientExecutorInput>(&input).unwrap();
+    let input = bincode::deserialize::<Vec<ClientExecutorInput>>(&input).unwrap();
 
     // Execute the block.
     let executor = ClientExecutor;
-    let executor_output = executor.execute::<DevnetVarient>(input.clone()).expect("failed to execute client");
-    let block = executor_output.block;
-    let mut hash_vector = Vec::<u8>::new();
-    let block_number = FixedBytes::from(block.number);
-    let mut block_number = Vec::from(block_number.as_slice());
-    hash_vector.append(&mut block_number);
+    let mut executor_outputs = Vec::new();
+    for i in input {
+        let output = executor.execute(i, &ChainVariant::devnet()).expect("failed to execute client");
+        executor_outputs.push(output);
+    }
 
-    let mut block_hash = Vec::from(block.hash_slow().as_slice());
-    hash_vector.append(&mut block_hash);
+    let mut pub_commitment_slice = Vec::new();
+    let from_block = executor_outputs.first().expect("empty output").number;
+    let to_block = executor_outputs.last().expect("empty outputs").number;
+    
+    () = executor_outputs.iter().map(|output| {
+        let public_commitment = BlockInfo {
+            previous_block: FixedBytes::from_slice(&output.parent_hash.0),
+            block_hash: FixedBytes::from_slice(&output.header.hash_slow().0),
+            transaction_root: FixedBytes::from_slice(&output.transactions_root.0),
+            receipt_root: FixedBytes::from_slice(&output.receipts_root.0),
+        };
+        let mut public_commitment = public_commitment.abi_encode_packed();
+        pub_commitment_slice.append(&mut public_commitment);
+    }).collect();   
 
-    let mut previous_state_root = Vec::from(input.previous_state_root.as_slice());
-    hash_vector.append(&mut previous_state_root); 
+    let public_commitment = PublicCommitment {
+        from_block,
+        to_block,
+        batch_hash: keccak256(pub_commitment_slice),
+    };
 
-    let mut state_root = Vec::from(block.state_root.as_slice()); 
-    hash_vector.append(&mut state_root);
-
-    let mut txn_root = Vec::from(block.transactions_root.as_slice());
-    hash_vector.append(&mut txn_root);
-
-    let mut receipt_root = Vec::from(block.receipts_root.as_slice());
-    hash_vector.append(&mut receipt_root);
-
-
-    sp1_zkvm::io::commit_slice(&hash_vector);
+    sp1_zkvm::io::commit_slice(&public_commitment.abi_encode_packed());
 }

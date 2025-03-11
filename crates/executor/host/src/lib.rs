@@ -1,14 +1,15 @@
-use std::{collections::BTreeSet, marker::PhantomData};
+mod error;
+pub use error::Error as HostError;
+use eyre::eyre;
+
+use std::{collections::BTreeSet, fs, marker::PhantomData, path::PathBuf};
+
 use alloy_provider::{network::AnyNetwork, Provider};
 use alloy_transport::Transport;
-use eyre::{eyre, Ok};
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{proofs, Block, Bloom, Receipts, B256};
 use revm::db::CacheDB;
-use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, DevnetVarient, EthereumVariant, LineaVariant,
-    OptimismVariant, Variant,
-};
+use rsp_client_executor::{io::ClientExecutorInput, ChainVariant, Variant};
 use rsp_mpt::EthereumState;
 use rsp_primitives::account_proof::eip1186_proof_to_account_proof;
 use rsp_rpc_db::RpcDb;
@@ -31,39 +32,55 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
     /// Executes the block with the given block number.
     pub async fn execute(
         &self,
-        block_number: u64,
-        variant: ChainVariant
+        previous_block: Block,
+        current_block: Block,
+        variant: ChainVariant,
     ) -> eyre::Result<ClientExecutorInput> {
         let client_input = match variant {
-            ChainVariant::Ethereum => self.execute_variant::<EthereumVariant>(block_number).await,
-            ChainVariant::Optimism => self.execute_variant::<OptimismVariant>(block_number).await,
-            ChainVariant::Linea => self.execute_variant::<LineaVariant>(block_number).await,
-            ChainVariant::Devnet => self.execute_variant::<DevnetVarient>(block_number).await,
+            ChainVariant::Ethereum(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
+            }
+            ChainVariant::Optimism(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
+            }
+            ChainVariant::Linea(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
+            }
+            ChainVariant::Devnet(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
+            }
         }?;
 
         Ok(client_input)
     }
 
-    async fn execute_variant<V>(&self, block_number: u64) -> eyre::Result<ClientExecutorInput>
-    where
-        V: Variant,
-    {
-        // Fetch the current block and the previous block from the provider.
-        let current_block = self
-            .provider
-            .get_block_by_number(block_number.into(), true)
-            .await?
-            .map(|block| Block::try_from(block.inner))
-            .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
-        let previous_block = self
-            .provider
-            .get_block_by_number((block_number - 1).into(), true)
-            .await?
-            .map(|block| Block::try_from(block.inner))
-            .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
+    pub async fn get_desired_blocks(
+        &self,
+        from_block: u64,
+        to_block: u64,
+    ) -> eyre::Result<Vec<Block>> {
+        let mut blocks = vec![];
+        for block_number in from_block - 1..to_block + 1 {
+            let block = self
+                .provider
+                .get_block_by_number(block_number.into(), true)
+                .await?
+                .map(|block| Block::try_from(block.inner))
+                .ok_or(eyre!("couldn't fetch block: {}", block_number))??;
+            blocks.push(block);
+        }
+        Ok(blocks)
+    }
 
-        // Setup the spec for the block executor.
-        let spec = V::spec();
+    async fn execute_variant(
+        &self,
+        variant: &ChainVariant,
+        previous_block: Block,
+        current_block: Block,
+        genesis_path: Option<PathBuf>,
+    ) -> Result<ClientExecutorInput, HostError> {
+        // Fetch the current block and the previous block from the provider.
+        let block_number = current_block.header.number;
 
         // Setup the database for the block executor.
         let rpc_db = RpcDb::new(self.provider.clone(), block_number - 1);
@@ -75,17 +92,20 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             block_number,
             current_block.body.len()
         );
-        // TODO: block validation fails from here
-        let executor_block_input = V::pre_process_block(&current_block)
+
+        let executor_block_input = variant
+            .pre_process_block(&current_block)
             .with_recovered_senders()
-            .ok_or(eyre!("failed to recover senders"))?;
+            .ok_or(HostError::FailedToRecoverSenders)?;
+
         let executor_difficulty = current_block.header.difficulty;
-        let executor_output = V::execute(&executor_block_input, executor_difficulty, cache_db)?;
+        let executor_output =
+            variant.execute(&executor_block_input, executor_difficulty, cache_db)?;
+
         // Validate the block post execution.
         tracing::info!("validating the block post execution");
-        V::validate_block_post_execution(
+        variant.validate_block_post_execution(
             &executor_block_input,
-            &spec,
             &executor_output.receipts,
             &executor_output.requests,
         )?;
@@ -161,7 +181,7 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             mutated_state.state_root()
         };
         if state_root != current_block.state_root {
-            eyre::bail!("mismatched state root");
+            return Err(HostError::StateRootMismatch(state_root, current_block.state_root));
         }
 
         // Derive the block header.
@@ -184,7 +204,12 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             current_block.requests.as_ref().map(|r| proofs::calculate_requests_root(&r.0));
 
         // Assert the derived header is correct.
-        assert_eq!(header.hash_slow(), current_block.header.hash_slow(), "header mismatch");
+        let constructed_header_hash = header.hash_slow();
+        let target_hash = current_block.header.hash_slow();
+        if constructed_header_hash != target_hash {
+            return Err(HostError::HeaderMismatch(constructed_header_hash, target_hash));
+        }
+
         // Log the result.
         tracing::info!(
             "successfully executed block: block_number={}, block_hash={}, state_root={}",
@@ -198,18 +223,30 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
         let mut ancestor_headers = vec![];
         tracing::info!("fetching {} ancestor headers", block_number - oldest_ancestor);
         for height in (oldest_ancestor..=(block_number - 1)).rev() {
-            let block = self.provider.get_block_by_number(height.into(), false).await?.unwrap();
+            let block = self
+                .provider
+                .get_block_by_number(height.into(), false)
+                .await?
+                .ok_or(HostError::ExpectedBlock(height))?;
+
             ancestor_headers.push(block.inner.header.try_into()?);
         }
+
+        let genesis = if let Some(genesis_path) = genesis_path {
+            Some(fs::read_to_string(genesis_path)?)
+        } else {
+            None
+        };
 
         // Create the client input.
         let client_input = ClientExecutorInput {
             previous_state_root: previous_block.header.state_root,
-            current_block: V::pre_process_block(&current_block),
+            current_block: variant.pre_process_block(&current_block),
             ancestor_headers,
             parent_state: state,
             state_requests,
             bytecodes: rpc_db.get_bytecodes(),
+            genesis,
         };
         tracing::info!("successfully generated client input");
 

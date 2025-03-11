@@ -1,11 +1,14 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
+use execute::process_execution_report;
+#[allow(unused_imports)]
+use reth_primitives::{hex::FromHex, keccak256, revm_primitives::FixedBytes};
+#[allow(unused_imports)]
 use rsp_client_executor::{
-    io::ClientExecutorInput, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
-    CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET,
+    io::ClientExecutorInput, BlockInfo, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA
 };
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{HashableKey, ProverClient, SP1Stdin};
+use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
 use std::{
     fs::{self, File},
     io::Write,
@@ -16,10 +19,11 @@ use tracing_subscriber::{
 };
 
 mod execute;
-use execute::process_execution_report;
 
 mod cli;
 use cli::ProviderArgs;
+
+mod eth_proofs;
 
 /// The arguments for the host executable.
 #[derive(Debug, Clone, Parser)]
@@ -27,23 +31,48 @@ struct HostArgs {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
+    #[clap(long)]
+    to_block: Option<u64>,
     #[clap(flatten)]
     provider: ProviderArgs,
-    /// Whether to generate a proof or just execute the block.
+
+    /// The path to the genesis json file to use for the execution.
+    #[clap(long)]
+    genesis_path: Option<PathBuf>,
+
+    /// generate a proof 
     #[clap(long)]
     prove: bool,
+
+    /// generate a dummy proof by just executing the program 
+    #[clap(long)]
+    execute: bool,
+
     /// Optional path to the directory containing cached client input. A new cache file will be
     /// created from RPC data if it doesn't already exist.
     #[clap(long)]
     cache_dir: Option<PathBuf>,
+
     /// The path to the CSV file containing the execution data.
     #[clap(long, default_value = "report.csv")]
     report_path: PathBuf,
+
+    /// Optional ETH proofs endpoint.
+    #[clap(long, env, requires("eth_proofs_api_token"))]
+    eth_proofs_endpoint: Option<String>,
+
+    /// Optional ETH proofs API token.
+    #[clap(long, env)]
+    eth_proofs_api_token: Option<String>,
+
+    /// Optional ETH proofs cluster ID.
+    #[clap(long, default_value_t = 1)]
+    eth_proofs_cluster_id: u64,
 }
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    // Intialize the environment variables.
+    // Initialize the environment variables.
     dotenv::dotenv().ok();
 
     if std::env::var("RUST_LOG").is_err() {
@@ -57,15 +86,23 @@ async fn main() -> eyre::Result<()> {
     let args = HostArgs::parse();
     let provider_config = args.provider.into_provider().await?;
 
-    let variant = match provider_config.chain_id {
-        CHAIN_ID_ETH_MAINNET => ChainVariant::Ethereum,
-        CHAIN_ID_OP_MAINNET => ChainVariant::Optimism,
-        CHAIN_ID_LINEA_MAINNET => ChainVariant::Linea,
-        CHAIN_ID_DEVNET => ChainVariant::Devnet,
-        _ => {
-            eyre::bail!("unknown chain ID: {}", provider_config.chain_id);
-        }
+    let variant = match &args.genesis_path {
+        Some(genesis_path) => ChainVariant::from_genesis_path(genesis_path)?,
+        None => match provider_config.chain_id {
+            CHAIN_ID_ETH_MAINNET => ChainVariant::mainnet(),
+            CHAIN_ID_OP_MAINNET => ChainVariant::op_mainnet(),
+            CHAIN_ID_LINEA_MAINNET => ChainVariant::linea_mainnet(),
+            CHAIN_ID_SEPOLIA => ChainVariant::sepolia(),
+            CHAIN_ID_DEVNET => ChainVariant::devnet(),
+            _ => {
+                eyre::bail!("Unknown chain ID: {}", provider_config.chain_id);
+            }
+        },
     };
+
+    if args.genesis_path.is_some() && variant.chain_id() != provider_config.chain_id {
+        eyre::bail!("The chain ID in the genesis file does not match the provided RPC");
+    }
 
     let client_input_from_cache = try_load_input_from_cache(
         args.cache_dir.as_ref(),
@@ -73,8 +110,10 @@ async fn main() -> eyre::Result<()> {
         args.block_number,
     )?;
 
-    let client_input = match (client_input_from_cache, provider_config.rpc_url) {
-        (Some(client_input_from_cache), _) => client_input_from_cache,
+    let (client_input, to_block) = match (client_input_from_cache, provider_config.rpc_url) {
+        (Some(client_input_from_cache), _) => {
+            (vec![client_input_from_cache], args.to_block.unwrap())
+        }
         (None, Some(rpc_url)) => {
             // Cache not found but we have RPC
             // Setup the provider.
@@ -82,13 +121,27 @@ async fn main() -> eyre::Result<()> {
 
             // Setup the host executor.
             let host_executor = HostExecutor::new(provider);
-            // Execute the host.
-            let client_input = host_executor
-                .execute(args.block_number, variant)
-                .await
-                .expect("failed to execute host");
 
-            if let Some(cache_dir) = args.cache_dir {
+            let mut client_input = Vec::new();
+            let to_block = match args.to_block {
+                Some(to_block) => to_block,
+                None => args.block_number,
+            };
+
+            let blocks = host_executor
+                .get_desired_blocks(args.block_number, to_block)
+                .await
+                .expect("failed to get desired blocks from RPC");
+
+            for i in 0..blocks.len() - 1 {
+                let cl_input = host_executor
+                    .execute(blocks[i].clone(), blocks[i + 1].clone(), variant.clone())
+                    .await
+                    .expect("failed to execute host");
+                client_input.push(cl_input);
+            }
+
+            if let Some(ref cache_dir) = args.cache_dir {
                 let input_folder = cache_dir.join(format!("input/{}", provider_config.chain_id));
                 if !input_folder.exists() {
                     std::fs::create_dir_all(&input_folder)?;
@@ -100,7 +153,7 @@ async fn main() -> eyre::Result<()> {
                 bincode::serialize_into(&mut cache_file, &client_input)?;
             }
 
-            client_input
+            (client_input, to_block)
         }
         (None, None) => {
             eyre::bail!("cache not found and RPC URL not provided")
@@ -108,18 +161,14 @@ async fn main() -> eyre::Result<()> {
     };
 
     // Generate the proof.
-    let client = ProverClient::new();
+    let client = ProverClient::from_env();
 
     // Setup the proving key and verification key.
     let (pk, vk) = client.setup(match variant {
-        ChainVariant::Ethereum => {
-            include_bytes!("../../client-eth/elf/riscv32im-succinct-zkvm-elf")
-        }
-        ChainVariant::Optimism => include_bytes!("../../client-op/elf/riscv32im-succinct-zkvm-elf"),
-        ChainVariant::Linea => include_bytes!("../../client-linea/elf/riscv32im-succinct-zkvm-elf"),
-        ChainVariant::Devnet => {
-            include_bytes!("../../client-local/elf/riscv32im-succinct-zkvm-elf")
-        }
+        ChainVariant::Ethereum(_) => include_elf!("rsp-client-eth"),
+        ChainVariant::Optimism(_) => include_elf!("rsp-client-op"),
+        ChainVariant::Linea(_) => include_elf!("rsp-client-linea"),
+        ChainVariant::Devnet(_) => include_elf!("rsp-client-local"),
     });
 
     // Execute the block inside the zkVM.
@@ -128,36 +177,41 @@ async fn main() -> eyre::Result<()> {
     stdin.write_vec(buffer);
 
     // Only execute the program.
-    let (_, execution_report) = client.execute(&pk.elf, stdin.clone()).run().unwrap();
+    let (output, execution_report) = client.execute(&pk.elf, &stdin).run().unwrap();
 
-    // Process the execute report, print it out, and save data to a CSV specified by
-    // report_path.
-    process_execution_report(variant, client_input, execution_report, args.report_path)?;
+    process_execution_report(variant, client_input, execution_report, args.report_path.clone())?;
+
+    let proof_dir = "proofs";
+    if let Ok(exists) = fs::exists(proof_dir) {
+        if !exists {
+            fs::create_dir(proof_dir).unwrap();
+        }
+    }
 
     if args.prove {
-        // Actually generate the proof. It is strongly recommended you use the network prover
-        // given the size of these programs.
         println!("Starting proof generation.");
-        println!("vk:: {:?}", vk.bytes32());
-        let proof = client.prove(&pk, stdin).groth16().run().expect("Proving should work.");
-        println!("Proof generation finished.");
+        let proof = client.prove(&pk, &stdin).groth16().run().expect("Proving should work.");
 
-        let proof_dir = "proofs";
-        if let Ok(exists) = fs::exists(proof_dir) {
-            if !exists {
-                fs::create_dir(proof_dir).unwrap();
-            }
-        }
-
-        let proof_json = serde_json::to_string(&proof).unwrap();
-        let file_name = format!("{}/execution_proof_{}.proof", proof_dir, args.block_number);
-        let mut proof_file = File::create(&file_name).unwrap();
-        proof_file.write_all(proof_json.as_bytes()).unwrap();
+        let proof_json = serde_json::to_string(&proof).expect("could not serialized the proof");
+        save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
+    } else if args.execute {
+        let public_value: String = output.raw();
+        let proof_json =
+            serde_json::to_string(&public_value).expect("couldnot serialize the proof");
+        save_proof_to_file(proof_json, proof_dir.to_string(), args.block_number, to_block);
+    } else {
+        panic!("should run in proving or executing mode");
     }
 
     Ok(())
+}
+
+fn save_proof_to_file(proof_json: String, proof_dir: String, start_block: u64, end_block: u64) {
+    let file_name = format!("{}/execution_proof_{}_{}.proof", proof_dir, start_block, end_block);
+    let mut proof_file = File::create(&file_name).expect("file creation error");
+    proof_file.write_all(proof_json.as_bytes()).expect("error writing proof to the file");
 }
 
 fn try_load_input_from_cache(
@@ -180,4 +234,30 @@ fn try_load_input_from_cache(
     } else {
         None
     })
+}
+
+#[test]
+fn test_commitment() {
+    let block_info = BlockInfo {
+            previous_block: FixedBytes::<32>::from_hex("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
+            block_hash: FixedBytes::<32>::from_hex("0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8").unwrap(),
+            transaction_root:  FixedBytes::<32>::from_hex("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421").unwrap(),
+            receipt_root: FixedBytes::<32>::from_hex("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421").unwrap()
+    };
+
+    let block_info2 = BlockInfo {
+        previous_block: FixedBytes::<32>::from_hex("0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8").unwrap(),
+        block_hash: FixedBytes::<32>::from_hex("0xa186e4eae5c8c4bb6dbbab6076ee2782947b5f62028c1a6bfa9a132a18a999dc").unwrap(),
+        transaction_root:  FixedBytes::<32>::from_hex("0x231e5f5a97d16bb5682c4736617ebded746b769b6dc0e53c022721f556694424").unwrap(),
+        receipt_root: FixedBytes::<32>::from_hex("0xf085d7c94cab8d416d39684d6b361b4ec1749f50daa60cf42c3585faec4fe3f6").unwrap()
+    };
+
+    let mut commitment = block_info.abi_encode_packed();
+    commitment.append(&mut block_info2.abi_encode_packed());
+
+    println!("commitment {}", hex::encode(commitment.clone()));
+
+    let commithash = keccak256(commitment);
+
+    println!("commitment {}", hex::encode(commithash));
 }

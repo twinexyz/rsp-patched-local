@@ -11,7 +11,7 @@ pub fn main() {
     // Execute the block.
     let executor = ClientExecutor;
     let header =
-        executor.execute(input, &ChainVariant::linea_mainnet()).expect("failed to execute client");
+        executor.execute(input, &ChainVariant::sepolia()).expect("failed to execute client");
     let block_hash = header.hash_slow();
 
     // Commit the block hash.

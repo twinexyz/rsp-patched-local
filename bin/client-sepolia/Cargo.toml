@@ -1,6 +1,6 @@
 [workspace.package]
 [package]
-name = "rsp-client-linea"
+name = "rsp-client-sepolia"
 description = ""
 edition = "2021"
 

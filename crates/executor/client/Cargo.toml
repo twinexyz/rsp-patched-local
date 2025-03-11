@@ -11,10 +11,11 @@ repository = { workspace = true }
 workspace = true
 
 [dependencies]
-eyre = { workspace = true }
-serde_json = { workspace = true }
-serde = { workspace = true }
-tokio = { workspace = true }
+eyre.workspace = true
+thiserror.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+tokio.workspace = true
 
 # workspace
 rsp-witness-db = { workspace = true }
@@ -22,18 +23,19 @@ rsp-primitives = { workspace = true }
 rsp-mpt = { workspace = true }
 
 # reth
-reth-ethereum-consensus = { workspace = true }
-reth-optimism-consensus = { workspace = true }
-reth-execution-types = { workspace = true }
-reth-primitives = { workspace = true }
-reth-storage-errors = { workspace = true }
-reth-trie = { workspace = true }
-reth-evm = { workspace = true }
-reth-evm-ethereum = { workspace = true }
-reth-evm-optimism = { workspace = true }
-reth-errors = { workspace = true }
-reth-chainspec = { workspace = true }
-reth-revm = { workspace = true }
+reth-consensus.workspace = true
+reth-ethereum-consensus.workspace = true
+reth-optimism-consensus.workspace = true
+reth-execution-types.workspace = true
+reth-primitives.workspace = true
+reth-storage-errors.workspace = true
+reth-trie.workspace = true
+reth-evm.workspace = true
+reth-evm-ethereum.workspace = true
+reth-evm-optimism.workspace = true
+reth-errors.workspace = true
+reth-chainspec.workspace = true
+reth-revm.workspace = true
 
 # revm
 revm = { workspace = true }
@@ -48,7 +50,7 @@ url = { workspace = true }
 futures = { workspace = true }
 
 sp1-verifier = { workspace = true }
-twine_precompiles = { workspace = true }
+twine-reth-evm = { workspace = true }
 
 [dev-dependencies]
 
