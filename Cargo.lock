@@ -266,7 +266,7 @@ dependencies = [
  "alloy-transport 0.7.3",
  "futures",
  "futures-util",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -337,7 +337,7 @@ dependencies = [
  "alloy-primitives 0.8.21",
  "alloy-rlp",
  "crc",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -600,7 +600,7 @@ dependencies = [
  "alloy-sol-types 0.8.21",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "tracing",
 ]
 
@@ -614,7 +614,7 @@ dependencies = [
  "alloy-sol-types 0.8.21",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "tracing",
 ]
 
@@ -703,7 +703,7 @@ dependencies = [
  "futures-utils-wasm",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -728,7 +728,7 @@ dependencies = [
  "futures-utils-wasm",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -979,7 +979,7 @@ dependencies = [
  "schnellru",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "tokio",
  "tracing",
  "wasmtimer 0.4.1",
@@ -1322,7 +1322,7 @@ dependencies = [
  "itertools 0.14.0",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -1433,7 +1433,7 @@ dependencies = [
  "auto_impl",
  "elliptic-curve",
  "k256",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -1448,7 +1448,7 @@ dependencies = [
  "either",
  "elliptic-curve",
  "k256",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -1480,7 +1480,7 @@ dependencies = [
  "async-trait",
  "k256",
  "rand",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -1695,7 +1695,7 @@ dependencies = [
  "futures-utils-wasm",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "tokio",
  "tower 0.5.2",
  "tracing",
@@ -2537,9 +2537,9 @@ checksum = "c3ac9f8b63eca6fd385229b3675f6cc0dc5c8a5c8a54a59d4f52ffd670d87b0c"
 
 [[package]]
 name = "bytemuck"
-version = "1.21.0"
+version = "1.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef657dfab802224e671f5818e9a4935f9b1957ed18e58292690cc39e7a4092a3"
+checksum = "b6b1fc10dbac614ebc03540c9dbd60e83887fda27794998c6528f1782047d540"
 dependencies = [
  "bytemuck_derive",
 ]
@@ -3388,29 +3388,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "engine"
-version = "0.1.0"
-dependencies = [
- "alloy-sol-types 0.7.7",
- "bincode",
- "blake3",
- "borsh 1.5.5",
- "bs58 0.5.1",
- "ed25519-consensus",
- "hex",
- "serde",
- "serde_arrays",
- "serde_bytes",
- "serde_json",
- "serde_with",
- "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-v0.10.8)",
- "thiserror 1.0.69",
- "tracing",
- "tracing-subscriber",
- "twine-solana-sdk",
 ]
 
 [[package]]
@@ -5505,7 +5482,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b7cafe60d6cf8e62e1b9b2ea516a089c008945bb5a275416789e7db0bc199dc"
 dependencies = [
  "memchr",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "ucd-trie",
 ]
 
@@ -5586,18 +5563,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77957b295656769bb8ad2b6a6b09d897d94f05c41b069aede1fcdaa675eaea04"
 dependencies = [
  "zerocopy",
-]
-
-[[package]]
-name = "precompile-lib"
-version = "0.1.0"
-dependencies = [
- "blake3",
- "borsh 1.5.5",
- "engine",
- "hex",
- "tracing",
- "twine-solana-sdk",
 ]
 
 [[package]]
@@ -5777,7 +5742,7 @@ dependencies = [
  "rustc-hash 2.1.1",
  "rustls",
  "socket2",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "tokio",
  "tracing",
 ]
@@ -5796,7 +5761,7 @@ dependencies = [
  "rustls",
  "rustls-pki-types",
  "slab",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "tinyvec",
  "tracing",
  "web-time",
@@ -7326,15 +7291,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_arrays"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38636132857f68ec3d5f3eb121166d2af33cb55174c4d5ff645db6165cbef0fd"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "serde_bytes"
 version = "0.11.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7356,9 +7312,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.139"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44f86c3acccc9c65b153fe1b85a3be07fe5515274ec9f0653b4a0875731c72a6"
+checksum = "20068b6e96dc6c9bd23e01df8827e6c7e1f2fddd43c21810382803c136b99373"
 dependencies = [
  "indexmap 2.7.1",
  "itoa",
@@ -7491,6 +7447,16 @@ dependencies = [
 [[package]]
 name = "sha2"
 version = "0.10.8"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha2-0.10.8-sp1-4.0.0#1f224388fdede7cef649bce0d63876d1a9e3f515"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest 0.10.7",
+]
+
+[[package]]
+name = "sha2"
+version = "0.10.8"
 source = "git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-v0.10.8#1f224388fdede7cef649bce0d63876d1a9e3f515"
 dependencies = [
  "cfg-if",
@@ -7560,7 +7526,7 @@ checksum = "297f631f50729c8c99b84667867963997ec0b50f32b2a7dbcab828ef0541e8bb"
 dependencies = [
  "num-bigint 0.4.6",
  "num-traits",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "time",
 ]
 
@@ -7606,6 +7572,35 @@ checksum = "c970269d99b64e60ec3bd6ad27270092a5394c4e309314b18ae3fe575695fbe8"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "solana-consensus-prover-lib"
+version = "0.1.0"
+source = "git+https://github.com/twinexyz/solana-consensus-prover#f7a648efeb3862374b0f7da5a2a58b0c0a783f62"
+dependencies = [
+ "alloy-sol-types 0.7.7",
+ "bincode",
+ "borsh 1.5.5",
+ "bs58 0.5.1",
+ "bytemuck",
+ "ed25519-consensus",
+ "num-derive",
+ "num-traits",
+ "serde",
+ "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha2-0.10.8-sp1-4.0.0)",
+ "solana-short-vec",
+ "thiserror 2.0.12",
+ "twine-solana-sdk 0.1.0 (git+ssh://git@github.com/twinexyz/twine-solana-sdk?branch=main)",
+]
+
+[[package]]
+name = "solana-short-vec"
+version = "2.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c54c66f19b9766a56fa0057d060de8378676cb64987533fa088861858fc5a69"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -8097,7 +8092,7 @@ dependencies = [
  "lazy_static",
  "sha2 0.10.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "substrate-bn-succinct",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -8422,11 +8417,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.11"
+version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d452f284b73e6d76dd36758a0c8684b1d5be31f92b89d07fd5822175732206fc"
+checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
 dependencies = [
- "thiserror-impl 2.0.11",
+ "thiserror-impl 2.0.12",
 ]
 
 [[package]]
@@ -8442,9 +8437,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.11"
+version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26afc1baea8a989337eeb52b6e72a039780ce45c3edfcc9c5b9d112feeb173c2"
+checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8955,7 +8950,7 @@ dependencies = [
 [[package]]
 name = "twine-evm-contracts"
 version = "0.1.0"
-source = "git+https://github.com/twinexyz/contracts-metadata?rev=a3de06dd52822fc0e347c9686e7e081ed595d79b#a3de06dd52822fc0e347c9686e7e081ed595d79b"
+source = "git+https://github.com/twinexyz/contracts-metadata?branch=master#c0b56627eaa83424db1cdd96e8f048d2ef8119f7"
 dependencies = [
  "alloy-contract 0.7.3",
  "alloy-sol-types 0.8.21",
@@ -8964,6 +8959,7 @@ dependencies = [
 [[package]]
 name = "twine-reth-evm"
 version = "0.1.0"
+source = "git+https://github.com/twinexyz/twine?branch=testing%2Fv2-flow-test#fa167b25024828511fe8df1b76169d01ee78c6f6"
 dependencies = [
  "alloy-consensus 0.5.4",
  "alloy-primitives 0.8.21",
@@ -8973,18 +8969,43 @@ dependencies = [
  "borsh 1.5.5",
  "ethereum_ssz 0.6.0",
  "hex",
- "precompile-lib",
  "reth-primitives 1.0.6 (git+https://github.com/sp1-patches/reth?tag=rsp-20240830)",
  "reth-tracing",
  "revm",
  "serde",
  "serde_json",
+ "solana-consensus-prover-lib",
  "sp1-verifier 4.1.0",
  "ssz_types",
  "twine-evm-contracts",
- "twine-solana-sdk",
+ "twine-solana-sdk 0.1.0 (git+https://github.com/twinexyz/twine-solana-sdk?branch=main)",
  "twine-util-mpt",
  "twine_tcp_lib",
+]
+
+[[package]]
+name = "twine-solana-sdk"
+version = "0.1.0"
+source = "git+ssh://git@github.com/twinexyz/twine-solana-sdk?branch=main#1c17df9d0f37d23342931c09029ffa997fadd521"
+dependencies = [
+ "bincode",
+ "blake3",
+ "borsh 0.10.4",
+ "borsh 0.9.3",
+ "borsh 1.5.5",
+ "bs58 0.4.0",
+ "bytemuck",
+ "hex",
+ "log",
+ "num-derive",
+ "num-traits",
+ "parking_lot",
+ "rand",
+ "serde",
+ "serde_bytes",
+ "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-v0.10.8)",
+ "smallvec",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -9015,6 +9036,7 @@ dependencies = [
 [[package]]
 name = "twine-util-mpt"
 version = "0.1.0"
+source = "git+https://github.com/twinexyz/twine?branch=testing%2Fv2-flow-test#fa167b25024828511fe8df1b76169d01ee78c6f6"
 dependencies = [
  "alloy-sol-types 0.8.21",
  "alloy-trie 0.7.9",
@@ -9024,6 +9046,7 @@ dependencies = [
 [[package]]
 name = "twine_tcp_lib"
 version = "0.1.0"
+source = "git+https://github.com/twinexyz/twine-consensus-prover?branch=main#858af9676c352ad73ec56924a4cf8176b299897d"
 dependencies = [
  "alloy 0.2.1",
  "alloy-sol-types 0.7.7",
