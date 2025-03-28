@@ -1,0 +1,55 @@
+name: Build and Upload Rust Binary
+on:
+  push:
+    branches:
+      - develop
+
+    tags:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install SP1
+        run: |
+          curl -L https://sp1up.succinct.xyz | bash
+          ~/.sp1/bin/sp1up
+
+
+      - name: Set Git Credentials
+        run: |
+          git config --global credential.helper store && \
+          echo "https://${{github.actor}}:${{ secrets.GH_ACTION_PAT }}@github.com" > ~/.git-credentials && \
+          chmod 600 ~/.git-credentials
+
+      - name: Install SP1 Program
+        run: |
+          cd bin/client-local
+          ~/.sp1/bin/cargo-prove prove build
+
+      - name: Build Rust Binary
+        run: cargo build --release
+
+      - name: Get Version
+        id: version
+        run: echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: "Build ${{ env.VERSION }}"
+          body: "Auto-built from ${{ github.ref_name }} branch"
+          draft: false
+          prerelease: true
+          files: target/release/rsp
