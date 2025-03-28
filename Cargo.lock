@@ -9000,7 +9000,7 @@ dependencies = [
 [[package]]
 name = "twine-reth-evm"
 version = "0.1.0"
-source = "git+https://github.com/twinexyz/twine?branch=develop#4dc6a290cc4db3feb2e5c4c73fd54944db263805"
+source = "git+https://github.com/twinexyz/twine?tag=v0.1.0-devnet#375ac7a34e97a08247ebac12e37f4bc89e67f88e"
 dependencies = [
  "alloy-consensus 0.5.4",
  "alloy-primitives 0.8.22",
@@ -9052,7 +9052,7 @@ dependencies = [
 [[package]]
 name = "twine-util-mpt"
 version = "0.1.0"
-source = "git+https://github.com/twinexyz/twine?branch=develop#4dc6a290cc4db3feb2e5c4c73fd54944db263805"
+source = "git+https://github.com/twinexyz/twine?tag=v0.1.0-devnet#375ac7a34e97a08247ebac12e37f4bc89e67f88e"
 dependencies = [
  "alloy-sol-types 0.8.22",
  "alloy-trie 0.7.9",
