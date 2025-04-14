@@ -3,9 +3,11 @@ use clap::Parser;
 use execute::process_execution_report;
 #[allow(unused_imports)]
 use reth_primitives::{hex::FromHex, keccak256, revm_primitives::FixedBytes};
+use rsp_client_executor::CHAIN_ID_TWINE;
 #[allow(unused_imports)]
 use rsp_client_executor::{
-    io::ClientExecutorInput, BlockInfo, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET, CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA
+    io::ClientExecutorInput, BlockInfo, ChainVariant, CHAIN_ID_DEVNET, CHAIN_ID_ETH_MAINNET,
+    CHAIN_ID_LINEA_MAINNET, CHAIN_ID_OP_MAINNET, CHAIN_ID_SEPOLIA,
 };
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{include_elf, ProverClient, SP1Stdin};
@@ -40,11 +42,11 @@ struct HostArgs {
     #[clap(long)]
     genesis_path: Option<PathBuf>,
 
-    /// generate a proof 
+    /// generate a proof
     #[clap(long)]
     prove: bool,
 
-    /// generate a dummy proof by just executing the program 
+    /// generate a dummy proof by just executing the program
     #[clap(long)]
     execute: bool,
 
@@ -94,6 +96,7 @@ async fn main() -> eyre::Result<()> {
             CHAIN_ID_LINEA_MAINNET => ChainVariant::linea_mainnet(),
             CHAIN_ID_SEPOLIA => ChainVariant::sepolia(),
             CHAIN_ID_DEVNET => ChainVariant::devnet(),
+            CHAIN_ID_TWINE => ChainVariant::custom(),
             _ => {
                 eyre::bail!("Unknown chain ID: {}", provider_config.chain_id);
             }
@@ -169,6 +172,7 @@ async fn main() -> eyre::Result<()> {
         ChainVariant::Optimism(_) => include_elf!("rsp-client-op"),
         ChainVariant::Linea(_) => include_elf!("rsp-client-linea"),
         ChainVariant::Devnet(_) => include_elf!("rsp-client-local"),
+        ChainVariant::Custom(_) => include_elf!("rsp-client-local"),
     });
 
     // Execute the block inside the zkVM.
@@ -239,17 +243,41 @@ fn try_load_input_from_cache(
 #[test]
 fn test_commitment() {
     let block_info = BlockInfo {
-            previous_block: FixedBytes::<32>::from_hex("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
-            block_hash: FixedBytes::<32>::from_hex("0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8").unwrap(),
-            transaction_root:  FixedBytes::<32>::from_hex("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421").unwrap(),
-            receipt_root: FixedBytes::<32>::from_hex("0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421").unwrap()
+        previous_block: FixedBytes::<32>::from_hex(
+            "0x0000000000000000000000000000000000000000000000000000000000000000",
+        )
+        .unwrap(),
+        block_hash: FixedBytes::<32>::from_hex(
+            "0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8",
+        )
+        .unwrap(),
+        transaction_root: FixedBytes::<32>::from_hex(
+            "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        )
+        .unwrap(),
+        receipt_root: FixedBytes::<32>::from_hex(
+            "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        )
+        .unwrap(),
     };
 
     let block_info2 = BlockInfo {
-        previous_block: FixedBytes::<32>::from_hex("0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8").unwrap(),
-        block_hash: FixedBytes::<32>::from_hex("0xa186e4eae5c8c4bb6dbbab6076ee2782947b5f62028c1a6bfa9a132a18a999dc").unwrap(),
-        transaction_root:  FixedBytes::<32>::from_hex("0x231e5f5a97d16bb5682c4736617ebded746b769b6dc0e53c022721f556694424").unwrap(),
-        receipt_root: FixedBytes::<32>::from_hex("0xf085d7c94cab8d416d39684d6b361b4ec1749f50daa60cf42c3585faec4fe3f6").unwrap()
+        previous_block: FixedBytes::<32>::from_hex(
+            "0xf881d5ea287102495698ac67b3bd9c8380fe6e1acbc4e2422c119e35ba6bfba8",
+        )
+        .unwrap(),
+        block_hash: FixedBytes::<32>::from_hex(
+            "0xa186e4eae5c8c4bb6dbbab6076ee2782947b5f62028c1a6bfa9a132a18a999dc",
+        )
+        .unwrap(),
+        transaction_root: FixedBytes::<32>::from_hex(
+            "0x231e5f5a97d16bb5682c4736617ebded746b769b6dc0e53c022721f556694424",
+        )
+        .unwrap(),
+        receipt_root: FixedBytes::<32>::from_hex(
+            "0xf085d7c94cab8d416d39684d6b361b4ec1749f50daa60cf42c3585faec4fe3f6",
+        )
+        .unwrap(),
     };
 
     let mut commitment = block_info.abi_encode_packed();

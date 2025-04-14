@@ -43,6 +43,9 @@ pub const CHAIN_ID_DEVNET: u64 = 0x539;
 /// Chain ID for Sepolia.
 pub const CHAIN_ID_SEPOLIA: u64 = 0xaa36a7;
 
+/// Chain ID for Custom TWINE chain
+pub const CHAIN_ID_TWINE: u64 = 0xa94b3;
+
 /// An executor that executes a block inside a zkVM.
 #[derive(Debug, Clone, Default)]
 pub struct ClientExecutor;
@@ -117,11 +120,29 @@ impl LineaVariant {
 
 /// Implementation for Linea-specific execution/validation logic.
 #[derive(Debug, Clone)]
-pub struct DevnetVarient {
+pub struct DevnetVariant {
     spec: ChainSpec,
 }
 
-impl DevnetVarient {
+impl DevnetVariant {
+    /// Creates a new Ethereum variant.
+    pub fn new(spec: ChainSpec) -> Self {
+        Self { spec }
+    }
+
+    /// Creates a new Ethereum variant, using the given genesis.
+    pub fn from_genesis(genesis: Genesis) -> Self {
+        Self { spec: genesis.into() }
+    }
+}
+
+/// Implementation for Linea-specific execution/validation logic.
+#[derive(Debug, Clone)]
+pub struct CustomVariant {
+    spec: ChainSpec,
+}
+
+impl CustomVariant {
     /// Creates a new Ethereum variant.
     pub fn new(spec: ChainSpec) -> Self {
         Self { spec }
@@ -141,8 +162,9 @@ pub enum ChainVariant {
     /// OP stack networks.
     Optimism(OptimismVariant),
     /// Devnet network
-    Devnet(DevnetVarient),
+    Devnet(DevnetVariant),
     Linea(LineaVariant),
+    Custom(CustomVariant),
 }
 
 impl ChainVariant {
@@ -161,7 +183,10 @@ impl ChainVariant {
                 Ok(Self::Linea(LineaVariant::new(rsp_primitives::chain_spec::linea_mainnet())))
             }
             CHAIN_ID_DEVNET => {
-                Ok(Self::Devnet(DevnetVarient::new(rsp_primitives::chain_spec::devnet())))
+                Ok(Self::Devnet(DevnetVariant::new(rsp_primitives::chain_spec::devnet())))
+            }
+            CHAIN_ID_TWINE => {
+                Ok(Self::Custom(CustomVariant::new(rsp_primitives::chain_spec::custom())))
             }
             _ => Err(ClientError::UnknownChainId(chain_id)),
         }
@@ -199,6 +224,10 @@ impl ChainVariant {
         Self::from_chain_id(CHAIN_ID_DEVNET).unwrap()
     }
 
+    pub fn custom() -> Self {
+        Self::from_chain_id(CHAIN_ID_TWINE).unwrap()
+    }
+
     /// Returns the chain ID for the given variant.
     pub fn chain_id(&self) -> u64 {
         match self {
@@ -206,6 +235,7 @@ impl ChainVariant {
             ChainVariant::Optimism(v) => v.spec.genesis.config.chain_id,
             ChainVariant::Linea(v) => v.spec.genesis.config.chain_id,
             ChainVariant::Devnet(v) => v.spec.genesis.config.chain_id,
+            ChainVariant::Custom(v) => v.spec.genesis.config.chain_id,
         }
     }
 
@@ -215,6 +245,7 @@ impl ChainVariant {
             ChainVariant::Optimism(v) => v.spec.genesis.clone(),
             ChainVariant::Linea(v) => v.spec.genesis.clone(),
             ChainVariant::Devnet(v) => v.spec.genesis.clone(),
+            ChainVariant::Custom(v) => v.spec.genesis.clone(),
         }
     }
 }
@@ -242,6 +273,9 @@ impl Variant for ChainVariant {
             ChainVariant::Devnet(v) => {
                 v.execute(executor_block_input, executor_difficulty, cache_db)
             }
+            ChainVariant::Custom(v) => {
+                v.execute(executor_block_input, executor_difficulty, cache_db)
+            }
         }
     }
 
@@ -256,6 +290,7 @@ impl Variant for ChainVariant {
             ChainVariant::Optimism(v) => v.validate_block_post_execution(block, receipts, requests),
             ChainVariant::Linea(v) => v.validate_block_post_execution(block, receipts, requests),
             ChainVariant::Devnet(v) => v.validate_block_post_execution(block, receipts, requests),
+            ChainVariant::Custom(v) => v.validate_block_post_execution(block, receipts, requests),
         }
     }
 
@@ -265,6 +300,7 @@ impl Variant for ChainVariant {
             ChainVariant::Optimism(v) => v.pre_process_block(block),
             ChainVariant::Linea(v) => v.pre_process_block(block),
             ChainVariant::Devnet(v) => v.pre_process_block(block),
+            ChainVariant::Custom(v) => v.pre_process_block(block),
         }
     }
 }
@@ -489,7 +525,7 @@ impl From<LineaVariant> for ChainVariant {
     }
 }
 
-impl Variant for DevnetVarient {
+impl Variant for DevnetVariant {
     fn execute<DB>(
         &self,
         executor_block_input: &BlockWithSenders,
@@ -517,9 +553,43 @@ impl Variant for DevnetVarient {
     }
 }
 
-impl From<DevnetVarient> for ChainVariant {
-    fn from(v: DevnetVarient) -> Self {
+impl From<DevnetVariant> for ChainVariant {
+    fn from(v: DevnetVariant) -> Self {
         Self::Devnet(v)
+    }
+}
+
+impl Variant for CustomVariant {
+    fn execute<DB>(
+        &self,
+        executor_block_input: &BlockWithSenders,
+        executor_difficulty: U256,
+        cache_db: DB,
+    ) -> Result<BlockExecutionOutput<Receipt>, BlockExecutionError>
+    where
+        DB: Database<Error: Into<ProviderError> + Display>,
+    {
+        EthExecutorProvider::new(
+            self.spec.clone().into(),
+            CustomEvmConfig::from_variant(self.clone().into()),
+        )
+        .executor(cache_db)
+        .execute((executor_block_input, executor_difficulty).into())
+    }
+
+    fn validate_block_post_execution(
+        &self,
+        block: &BlockWithSenders,
+        receipts: &[Receipt],
+        requests: &[Request],
+    ) -> Result<(), ConsensusError> {
+        validate_block_post_execution_ethereum(block, &self.spec, receipts, requests)
+    }
+}
+
+impl From<CustomVariant> for ChainVariant {
+    fn from(v: CustomVariant) -> Self {
+        Self::Custom(v)
     }
 }
 

@@ -49,6 +49,9 @@ impl<T: Transport + Clone, P: Provider<T, AnyNetwork> + Clone> HostExecutor<T, P
             ChainVariant::Devnet(_) => {
                 self.execute_variant(&variant, previous_block, current_block, None).await
             }
+            ChainVariant::Custom(_) => {
+                self.execute_variant(&variant, previous_block, current_block, None).await
+            }
         }?;
 
         Ok(client_input)

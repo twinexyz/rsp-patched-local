@@ -14,8 +14,18 @@ revm-primitives = { version = "9.0.0", features = [
     "serde",
 ], default-features = false }
 
+reth-primitives = { git = "https://github.com/parajuliswopnil/sp1-reth.git", branch = "rsp-20250124", default-features = false, features = [
+    "alloy-compat",
+    "optimism",
+    "std",
+] }
+
 # sp1
 sp1-zkvm = "4.0.0"
+
+[features] 
+devnet = []
+custom-net = []
 
 [patch.crates-io]
 # Precompile patches

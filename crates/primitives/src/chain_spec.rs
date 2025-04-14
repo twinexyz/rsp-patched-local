@@ -88,6 +88,39 @@ pub fn devnet() -> ChainSpec {
     }
 }
 
+pub fn custom() -> ChainSpec {
+    let genesis = include_str!("../res/genesis/custom-genesis.json");
+    let genesis: reth_primitives::Genesis = serde_json::from_str(genesis).unwrap();
+    ChainSpec {
+        chain: Chain::from_id(693427),
+        genesis,
+        paris_block_and_final_difficulty: Some((0, U256::ZERO)),
+        hardforks: ChainHardforks::new(vec![
+            (EthereumHardfork::Frontier.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Homestead.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Dao.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Tangerine.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::SpuriousDragon.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Byzantium.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Constantinople.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Petersburg.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Istanbul.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::MuirGlacier.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::Berlin.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::London.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::ArrowGlacier.boxed(), ForkCondition::Block(0)),
+            (EthereumHardfork::GrayGlacier.boxed(), ForkCondition::Block(0)),
+            (
+                EthereumHardfork::Paris.boxed(),
+                ForkCondition::TTD { fork_block: Some(0), total_difficulty: U256::ZERO },
+            ),
+            (EthereumHardfork::Shanghai.boxed(), ForkCondition::Timestamp(0)),
+            (EthereumHardfork::Cancun.boxed(), ForkCondition::Timestamp(0)),
+        ]),
+        ..Default::default()
+    }
+}
+
 /// Returns the [ChainSpec] for OP Mainnet.
 pub fn op_mainnet() -> ChainSpec {
     // Spec extracted from:

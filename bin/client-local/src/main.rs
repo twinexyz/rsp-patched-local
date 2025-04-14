@@ -14,11 +14,19 @@ pub fn main() {
 
     // Execute the block.
     let executor = ClientExecutor;
-    let mut executor_outputs = Vec::new();
+    let mut executor_outputs: Vec<reth_primitives::Block> = Vec::new();
     for i in input {
-        let output =
-            executor.execute(i, &ChainVariant::devnet()).expect("failed to execute client");
-        executor_outputs.push(output);
+        #[cfg(feature = "devnet")] {
+            let output =
+            executor.execute(i.clone(), &ChainVariant::devnet()).expect("failed to execute client");
+            executor_outputs.push(output);
+        }
+
+        #[cfg(feature = "custom-net")] {
+            let output =
+            executor.execute(i, &ChainVariant::custom()).expect("failed to execute client");
+            executor_outputs.push(output);
+        }     
     }
 
     let mut pub_commitment_slice = Vec::new();
