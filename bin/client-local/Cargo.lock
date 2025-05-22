@@ -4849,7 +4849,7 @@ dependencies = [
  "ripemd",
  "secp256k1",
  "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha2-0.10.8-sp1-4.0.0)",
- "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?tag=patch-0.6.0-sp1-4.0.0)",
+ "substrate-bn",
 ]
 
 [[package]]
@@ -4964,7 +4964,7 @@ dependencies = [
  "rsp-witness-db",
  "serde",
  "serde_json",
- "sp1-verifier 3.0.0",
+ "sp1-verifier 4.0.0",
  "thiserror 1.0.69",
  "tokio",
  "twine-reth-evm",
@@ -5501,6 +5501,16 @@ dependencies = [
 
 [[package]]
 name = "sp1-lib"
+version = "4.0.0"
+source = "git+https://github.com/twinexyz/sp1.git?branch=v4.0.0-twine#67551db280b5ffc844927beebc8034a39c8ba603"
+dependencies = [
+ "bincode",
+ "serde",
+ "sp1-primitives 4.0.0",
+]
+
+[[package]]
+name = "sp1-lib"
 version = "4.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a062a18747775aa84ed9776549ebd94f4cb5c05a2ffaa4f41a0cf6d49b0bee7f"
@@ -5508,7 +5518,24 @@ dependencies = [
  "bincode",
  "elliptic-curve",
  "serde",
- "sp1-primitives",
+ "sp1-primitives 4.1.3",
+]
+
+[[package]]
+name = "sp1-primitives"
+version = "4.0.0"
+source = "git+https://github.com/twinexyz/sp1.git?branch=v4.0.0-twine#67551db280b5ffc844927beebc8034a39c8ba603"
+dependencies = [
+ "bincode",
+ "hex",
+ "lazy_static",
+ "num-bigint 0.4.6",
+ "p3-baby-bear",
+ "p3-field",
+ "p3-poseidon2",
+ "p3-symmetric",
+ "serde",
+ "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha2-0.10.8-sp1-4.0.0)",
 ]
 
 [[package]]
@@ -5531,14 +5558,14 @@ dependencies = [
 
 [[package]]
 name = "sp1-verifier"
-version = "3.0.0"
-source = "git+https://github.com/succinctlabs/sp1.git?rev=b8abe3298b92eec38d6f1b7f7e51a1329b272148#b8abe3298b92eec38d6f1b7f7e51a1329b272148"
+version = "4.0.0"
+source = "git+https://github.com/twinexyz/sp1.git?branch=v4.0.0-twine#67551db280b5ffc844927beebc8034a39c8ba603"
 dependencies = [
  "hex",
  "lazy_static",
  "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha2-0.10.8-sp1-4.0.0)",
- "substrate-bn 0.6.0 (git+https://github.com/sp1-patches/bn?tag=substrate_bn-v0.6.0-patch-v2)",
- "thiserror-no-std",
+ "substrate-bn-succinct",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -5555,9 +5582,8 @@ dependencies = [
 
 [[package]]
 name = "sp1-zkvm"
-version = "4.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3923200d2de0a1e96590b3b9e968db282b2856c088c1ab164229d36d8f3192ff"
+version = "4.0.0"
+source = "git+https://github.com/twinexyz/sp1.git?branch=v4.0.0-twine#67551db280b5ffc844927beebc8034a39c8ba603"
 dependencies = [
  "cfg-if",
  "getrandom 0.2.15",
@@ -5565,8 +5591,8 @@ dependencies = [
  "libm",
  "rand",
  "sha2 0.10.8 (git+https://github.com/sp1-patches/RustCrypto-hashes?tag=patch-sha2-0.10.8-sp1-4.0.0)",
- "sp1-lib 4.1.3",
- "sp1-primitives",
+ "sp1-lib 4.0.0",
+ "sp1-primitives 4.0.0",
 ]
 
 [[package]]
@@ -5702,22 +5728,6 @@ dependencies = [
  "rand",
  "rustc-hex",
  "sp1-lib 4.1.3",
-]
-
-[[package]]
-name = "substrate-bn"
-version = "0.6.0"
-source = "git+https://github.com/sp1-patches/bn?tag=substrate_bn-v0.6.0-patch-v2#8ef05d3969312eca34fa9f1f566a469022badda6"
-dependencies = [
- "bytemuck",
- "byteorder",
- "cfg-if",
- "crunchy",
- "lazy_static",
- "num-bigint 0.4.6",
- "rand",
- "rustc-hex",
- "sp1-lib 3.4.0",
 ]
 
 [[package]]
