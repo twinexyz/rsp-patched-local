@@ -120,8 +120,7 @@ revm-precompile = { version = "=11.0.1", default-features = false }
 
 sp1-sdk= { git = "https://github.com/twinexyz/sp1.git", branch = "v4.0.0-twine" }
 sp1-helper = { git = "https://github.com/twinexyz/sp1.git", branch = "v4.0.0-twine" }
-twine-reth-evm = { git = "https://github.com/twinexyz/twine", tag = "v0.1.0-devnet" }
-sp1-verifier = { git = "https://github.com/twinexyz/sp1.git", branch = "v4.0.0-twine" }
+twine-reth-evm = { git = "https://github.com/twinexyz/twine", branch = "fix/sw/sp1-v4.0.0-twine" }
 ark-groth16 = { git = "https://github.com/arkworks-rs/groth16.git" }
 
 
