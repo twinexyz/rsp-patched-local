@@ -15,7 +15,7 @@ revm-primitives = { version = "9.0.0", features = [
 ], default-features = false }
 
 # sp1
-sp1-zkvm = { git = "https://github.com/twinexyz/sp1.git", branch = "v4.0.0-twine" }
+sp1-zkvm = "4.0.0" 
 
 [patch.crates-io]
 # Precompile patches
